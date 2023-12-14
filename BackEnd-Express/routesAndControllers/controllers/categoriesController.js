@@ -4,6 +4,7 @@ const   prisma = new PrismaClient();
 const   { pureSlug } = require("../../utilities/slugUtilities/slugFunctions");
 
 const   ErrorFromDB = require("../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
+const   ErrorItemNotFound = require("../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
 
 // Gestiamo la index di modo che possa restituire la lista delle categorie presenti e, opzionalmente, anche tutte le foto ad esse collegate (al momento, per la index completa di foto, utilizziamo la funzione index_all)
 async function index(req, res, next)
@@ -30,6 +31,30 @@ async function index_all(req, res, next)
 
 }
 
+async function show(req, res, next)
+{
+    // Per ora diamo per scontato che l'argomento (slug o id che sia) abbia superato la validazione e che il validatore stesso abbia predisposta in req un campo { "slug" : slug } oppure { "id" : id }
+    // const argument = { "id" : parseInt(req.params.arg) };
+    const argument = { "slug" : req.params.arg }
+    const prismaQuery = { where : argument };
+    let categoryToFind = null;
+    try
+    {
+        categoryToFind = await prisma.Category.findUnique(prismaQuery);
+        if (categoryToFind)
+        {
+            console.log("Categoria cercata e trovata: ", categoryToFind);
+            res.json({ category : categoryToFind });
+        }
+        else
+            next( new ErrorItemNotFound("Categoria non trovata") );
+    }
+    catch(error)
+    {
+        next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
+}
+
 async function store(req, res, next)
 {
     const { name, thumb } = req.body;
@@ -53,12 +78,12 @@ async function store(req, res, next)
         }
         // Quest'ultima condizione dovrebbe riguardare solo il caso di "ripetizione" di chiave unique; caso che sparirà con le validazioni pre chiamata
         else
-            next( new ErrorFromDB("Non è possibile creare la categoria richiesta.") );
+            next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
     catch(error)
     {
-        next( new ErrorFromDB("Non è possibile creare la categoria richiesta.") );
+        next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
 }
 
-module.exports = { index, index_all, store }
+module.exports = { index, index_all, show, store }
