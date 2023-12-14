@@ -86,4 +86,36 @@ async function store(req, res, next)
     }
 }
 
-module.exports = { index, index_all, show, store }
+async function destroy(req, res, next)
+{
+    // Stessi discorsi fatti per la show
+    // const argument = { "id" : parseInt(req.params.arg) };
+    const argument = { "slug" : req.params.arg }
+    const prismaQuery = { where : argument };
+    let categoryToDelete = null;
+    try
+    {
+        categoryToDelete = await prisma.Category.findUnique(prismaQuery);
+            if (!categoryToDelete)
+            {
+                next( new ErrorItemNotFound("Categoria non trovata") );
+                console.log("ERRORE LANCIATO");
+            }
+            else
+            {
+                /// Le seguenti due righe di codice servono per testare l'effettivo rilancio di un errore reale collegato alla crud delete
+                // const fakeQuery = {...prismaQuery, campo_strano : true};
+                // categoryToDelete = await prisma.Category.delete(fakeQuery);
+                categoryToDelete = await prisma.Category.delete(prismaQuery);
+                console.log("Categoria cancellata con successo: ", categoryToDelete);
+                res.json({ category_deleted : categoryToDelete });
+            }
+    }
+    catch(error)
+    {
+        console.log("VERO ERRORE")
+        next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
+}
+
+module.exports = { index, index_all, show, store, destroy }
