@@ -9,3 +9,53 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+// Modello della tabella Users
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(25)
+  surname   String    @db.VarChar(35)
+  role      String    @db.VarChar(10) @default("admin")
+  email     String    @db.VarChar(50) @unique
+  password  String    @db.VarChar(255)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  pictures  Picture[] 
+
+  @@map("users")
+}
+
+// Modello della tabella Categories
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(25)
+  slug      String    @db.VarChar(25) @unique
+  thumb     String?   @db.VarChar(255)
+
+  pictures  Picture[] 
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@map("categories")
+}
+
+// Modelo della tabella Pictures
+model Picture {
+  id          Int         @id @default(autoincrement())
+  title       String      @db.VarChar(100) 
+  description String?     @db.Text
+  image       String      @db.VarChar(255)
+  visible     Boolean     @default(false)  
+
+  userId      Int
+  user        User        @relation(fields: [userId], references: [id])
+
+  categories  Category[]
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("pictures")
+}
