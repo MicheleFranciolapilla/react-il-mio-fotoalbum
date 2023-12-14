@@ -4,5 +4,7 @@ const   router = express.Router();
 const   controller = require("../controllers/categoriesController");
 
 router.get("/", controller.index);
+router.get("/all_data", controller.index_all);
+router.post("/", controller.store);
 
 module.exports = router;

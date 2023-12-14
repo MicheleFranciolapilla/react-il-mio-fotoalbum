@@ -13,11 +13,16 @@ const   errorsManager = require("./exceptionsAndMiddlewares/middlewares/errorsMa
 
 const   port = process.env.PORT || 8080;
 const   server = express();
+
+        // Body parsers
+        server.use(express.json());
+        server.use(express.urlencoded({ extended : true }));
+
         // Definizione rotte
-        // HOME
+        // home
         server.get("/", homeController.home);
         server.get("/home", homeController.home);
-        // CATEGORIES
+        // categories
         server.use("/categories", routerForCategories);
 
         // Middlewares errori
