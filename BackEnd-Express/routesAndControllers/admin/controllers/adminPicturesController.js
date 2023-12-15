@@ -34,7 +34,31 @@ async function index(req, res, next)
 
 async function show(req, res, next)
 {
-
+    const id = parseInt(req.params.id);
+    const prismaQuery = {   where   :   { 
+                                            "id"        :   id 
+                                        },
+                            include :   {
+                                            user        :   true,
+                                            categories  :   true
+                                        }
+                        };
+    let pictureToFind = null;
+    try
+    {
+        pictureToFind = await prisma.Picture.findUnique(prismaQuery);
+        if (pictureToFind)
+        {
+            console.log("Picture cercata e trovata: ", pictureToFind);
+            res.json({ picture : pictureToFind });
+        }
+        else
+            return next( new ErrorItemNotFound("Picture non trovata") );
+    }
+    catch(error)
+    {
+        return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
 }
 
 async function store(req, res, next)
