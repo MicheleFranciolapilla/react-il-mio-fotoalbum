@@ -69,11 +69,6 @@ async function index(req, res, next)
     }
 }
 
-async function index_all(req, res, next)
-{
-
-}
-
 async function show(req, res, next)
 {
     // Per ora diamo per scontato che l'argomento (slug o id che sia) abbia superato la validazione e che il validatore stesso abbia predisposta in req un campo { "slug" : slug } oppure { "id" : id }

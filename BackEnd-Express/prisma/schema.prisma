@@ -48,6 +48,7 @@ model Picture {
   title       String      @db.VarChar(100) 
   description String?     @db.Text
   image       String      @db.VarChar(255)
+  imageMime   String      @db.VarChar(25)
   visible     Boolean     @default(false)  
 
   userId      Int

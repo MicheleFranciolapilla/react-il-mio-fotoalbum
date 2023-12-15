@@ -2,10 +2,14 @@ const   dotenv = require("dotenv").config();
 const   express = require("express");
 
 // Controllers
-const   homeController = require("./routesAndControllers/guest/controllers/homeController");
+const   homeController = require("./routesAndControllers/guest/controllers/guestHomeController");
 
-// Routers
-const   routerForCategories = require("./routesAndControllers/admin/routes/categoriesRoutes");
+// Routers per rotte pubbliche
+const   routerForPicturesGuest = require("./routesAndControllers/guest/routes/guestPicturesRoutes");
+
+// Routers per rotte private (admin)
+const   routerForCategories = require("./routesAndControllers/admin/routes/adminCategoriesRoutes");
+const   routerForPicturesAdmin = require("./routesAndControllers/admin/routes/adminPicturesRoutes");
 
 // Middlewares
 const   error404 = require("./exceptionsAndMiddlewares/middlewares/error404RouteNotFound");
@@ -22,11 +26,16 @@ const   server = express();
         server.use(express.urlencoded({ extended : true }));
 
         // Definizione rotte
+        // Rotte pubbliche
         // home
         server.get("/", homeController.home);
         server.get("/home", homeController.home);
+        server.use("/pictures", routerForPicturesGuest);
+
+        // Rotte private (admin)
         // categories
         server.use("/admin/categories", routerForCategories);
+        server.use("/admin/pictures", routerForPicturesAdmin);
 
         // Middlewares errori
         server.use(error404);
