@@ -11,8 +11,11 @@ const   routerForCategories = require("./routesAndControllers/routes/categoriesR
 const   error404 = require("./exceptionsAndMiddlewares/middlewares/error404RouteNotFound");
 const   errorsManager = require("./exceptionsAndMiddlewares/middlewares/errorsManager");
 
+// Configurazione server
 const   port = process.env.PORT || 8080;
 const   server = express();
+
+        server.use(express.static("public"));
 
         // Body parsers
         server.use(express.json());

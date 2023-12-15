@@ -1,5 +1,7 @@
 const   { PrismaClient } = require("@prisma/client");
 const   prisma = new PrismaClient();
+const   fileSystem = require("fs");
+const   pathLibrary = require("path");
 
 const   { pureSlug } = require("../../utilities/slugUtilities/slugFunctions");
 
@@ -7,12 +9,35 @@ const   ErrorFromDB = require("../../exceptionsAndMiddlewares/exceptions/ErrorFr
 const   ErrorItemNotFound = require("../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
 const   ErrorInvalidName = require("../../exceptionsAndMiddlewares/exceptions/exceptionsOnCategories/ErrorInvalidName");
 
+const   thumbFolderName = "imagesForCategories";
+
+function splitMime(fileMime)
+{  
+    const result = fileMime.split("/");
+    return result; 
+}
+
+function fileWithExt(fileObj)
+{
+    const extension = splitMime(fileObj.mimetype)[1];
+    fileSystem.renameSync(fileObj.path, fileObj.path.concat(".", extension));
+}
+
+function deleteFile(fileName, fileExtension)
+{
+    const fileToDelete = pathLibrary.resolve(__dirname, "../../public/", thumbFolderName, fileName.concat(".", fileExtension));
+    fileSystem.unlinkSync(fileToDelete);
+}
+
 async function idBySlug(slugToCheck)
 {
     let categoryWithSlug = null;
+    console.log("FUNZIONE INVOCATA");
     try
     {
+        console.log("TRY");
         categoryWithSlug = await prisma.Category.findUnique({ where : { slug : slugToCheck } });
+        console.log("CATEGORYWITHSLUG: ", categoryWithSlug);
         if (categoryWithSlug)
             return categoryWithSlug.id;
         else
@@ -75,19 +100,37 @@ async function show(req, res, next)
 
 async function store(req, res, next)
 {
-    const { name, thumb } = req.body;
+    const { name } = req.body;
     const slug = pureSlug(name);
+    const { file } = req;
+    let thumb = null;
+    let thumbMime = null;
+    // Prevedere controlli sulla tipologia di file
+    if (file)
+    {
+        console.log(file);
+        thumb = file.filename;
+        thumbMime = file.mimetype;
+        fileWithExt(file);
+    }
     const checkIdBySlug = await idBySlug(slug);
     if (checkIdBySlug === -1)
+    {
+        if (thumb)
+            deleteFile(thumb, splitMime(thumbMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
     else if (checkIdBySlug !== 0)
+    {
+        if (thumb)
+            deleteFile(thumb, splitMime(thumbMime)[1]);
         return next( new ErrorInvalidName("Nome della categoria non valido.") );
-    console.log("NAME: ", name, " SLUG: ", slug, " THUMB: ", thumb);
+    }
+    console.log("NAME: ", name, " SLUG: ", slug, " THUMB: ", thumb, "MIME: ", thumbMime);
     // Al momento gestiamo solo il name. Del thumb ce ne occuperemo successivamente
     // Al momento lo slug lo generiamo quì, fermo restando che già in fase di validazione lo si sarà utilizzato. In seguito si potrebbe fare in modo che, già il validatore carichi il campo slug all'interno di req.body
     // Dovremo fare in modo che lo slug del name esculda i nomi non validi o ripetuti. Questo controllo lo effettueremo nelle validazioni
-    let prismaQuery = { data : { "name" : name, "slug" : slug } };
-    prismaQuery.data["thumb"] = thumb ?? null;
+    let prismaQuery = { data : { "name" : name, "slug" : slug, "thumb" : thumb, "thumbMime" : thumbMime } };
     let newCategory = null;
     console.log("QUERY: ", prismaQuery);
     try
@@ -100,10 +143,16 @@ async function store(req, res, next)
         }
         // Quest'ultima condizione dovrebbe riguardare solo il caso di "ripetizione" di chiave unique; caso che sparirà con le validazioni pre chiamata
         else
+        {
+            if (thumb)
+                deleteFile(thumb, splitMime(thumbMime)[1]);
             return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+        }
     }
     catch(error)
     {
+        if (thumb)
+            deleteFile(thumb, splitMime(thumbMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
 }
@@ -114,9 +163,20 @@ async function update(req, res, next)
     // Il principio da adottare in questa update è il seguente:
     // Se ad essere aggiornato è solo il thumb o eventualmente il titolo, lasciando però lo slug invariato, si devono mantenere le relazioni precedenti, in caso contrario, le relazioni dovranno andare perse.
     // Ricordarsi di testare questo comportamento dopo aver implementato i controllers relativi alla tabella Pictures
-    // const argument = { "id" : parseInt(req.params.arg) };
-    const argument = { "slug" : req.params.arg }
+    const argument = { "id" : parseInt(req.params.arg) };
+    // const argument = { "slug" : req.params.arg }
     let prismaQuery = { where : argument };
+    const { file } = req;
+    let thumb = null;
+    let thumbMime = null;
+    // Prevedere controlli sulla tipologia di file
+    if (file)
+    {
+        console.log(file);
+        thumb = file.filename;
+        thumbMime = file.mimetype;
+        fileWithExt(file);
+    }
     let categoryToUpdate = null;
     try
     {
@@ -124,48 +184,83 @@ async function update(req, res, next)
         if (!categoryToUpdate)
         {
             console.log("ERRORE LANCIATO");
+            if (thumb)
+                deleteFile(thumb, splitMime(thumbMime)[1]);
             return next( new ErrorItemNotFound("Categoria non trovata") );
         }
     }
     catch(error)
     {
-        console.log("VERO ERRORE")
+        console.log("VERO ERRORE");
+        if (thumb)
+            deleteFile(thumb, splitMime(thumbMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
-    // Il codice prosegue anche dopo che si generano gli errori con il next, ragion per cui, nel proseguire si sottosta alla condizione di categoryToUpdate !== null
-    if (categoryToUpdate)
+    console.log("SI PROSEGUE");
+    const { name } = req.body;
+    const slug = pureSlug(name);
+    const checkIdBySlug = await idBySlug(slug);
+    if (checkIdBySlug == -1)
     {
-        console.log("SI PROSEGUE");
-        const { name, thumb, keep } = req.body;
-        const slug = pureSlug(name);
-        const checkIdBySlug = await idBySlug(slug);
-        if (checkIdBySlug == -1)
-            return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
-        else if ((checkIdBySlug !== 0) && (checkIdBySlug !== categoryToUpdate.id))
-            return next( new ErrorInvalidName("Nome della categoria non valido.") );        
-        let dataQuery = { data : { "name" : name, "slug" : slug } }
-        dataQuery.data["thumb"] = thumb ??  null;
-        // Si manterranno le connessioni con le pictures solo se lo slug è rimasto invariato il che significa che si sta modificando la thumb o il nome in maniera non significativa (MA SOLO SE KEEP E' TRUE), altrimenti si perderanno le connessioni (SLUG DIFFERENTI O KEEP FALSE O ASSENTE)
-        // Si commenta tutta la parte relativa all'eventuale mantenimento delle relazioni. Eventualmente lo si potrà implementare successivamente
-        // const keepConnected = ((slug === categoryToUpdate.slug) && (keep));
-        // connectionQuery = { pictures : { disconnect : true } };
-        // if (keepConnected && categoryToUpdate.pictures)
-        //     connectionQuery = { pictures : { connect : categoryToUpdate.pictures.map( picture => ({ "id" : picture.id }) ) } }
-        // dataQuery.data["pictures"] = connectionQuery.pictures; 
-        prismaQuery.where = { id : categoryToUpdate.id };
-        const finalQuery = { where : prismaQuery.where, data : dataQuery.data };
-        console.log("FINALQUERY: ", finalQuery);
-        try
-        {
-            categoryToUpdate = await prisma.Category.update(finalQuery);
-        }
-        catch(error)
-        {
-            return next( new ErrorFromDB("Operazione non eseguibile al momento."));
-        }
-        console.log("Categoria modificata in... ", categoryToUpdate);
-        res.json({ category_updated_to : categoryToUpdate });
+        if (thumb)
+            deleteFile(thumb, splitMime(thumbMime)[1]);
+        return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
+    else if ((checkIdBySlug !== 0) && (checkIdBySlug !== categoryToUpdate.id))
+    {
+        if (thumb)
+            deleteFile(thumb, splitMime(thumbMime)[1]);
+        return next( new ErrorInvalidName("Nome della categoria non valido.") );     
+    }
+    const previousFile = { thumb : categoryToUpdate.thumb, thumbMime : categoryToUpdate.thumbMime};  
+    const { keepPreviousThumb } = req.body;
+        
+    if ((!thumb) && (keepPreviousThumb))
+    {
+        thumb = previousFile.thumb;
+        thumbMime = previousFile.thumbMime;
+    }
+
+    console.log("PATH: ", pathLibrary.resolve(__dirname, "../../public/", thumbFolderName, thumb.concat(".", splitMime(thumbMime)[1])));
+    console.log("NAME: ", name, " SLUG: ", slug, " THUMB: ", thumb, "MIME: ", thumbMime);
+    let dataQuery = { data : { "name" : name, "slug" : slug, "thumb" : thumb, "thumbMime" : thumbMime } }
+    // Si manterranno le connessioni con le pictures solo se lo slug è rimasto invariato il che significa che si sta modificando la thumb o il nome in maniera non significativa (MA SOLO SE KEEP E' TRUE), altrimenti si perderanno le connessioni (SLUG DIFFERENTI O KEEP FALSE O ASSENTE)
+    // Si commenta tutta la parte relativa all'eventuale mantenimento delle relazioni. Eventualmente lo si potrà implementare successivamente
+    // const keepConnected = ((slug === categoryToUpdate.slug) && (keep));
+    // connectionQuery = { pictures : { disconnect : true } };
+    // if (keepConnected && categoryToUpdate.pictures)
+    //     connectionQuery = { pictures : { connect : categoryToUpdate.pictures.map( picture => ({ "id" : picture.id }) ) } }
+    // dataQuery.data["pictures"] = connectionQuery.pictures; 
+    prismaQuery.where = { id : categoryToUpdate.id };
+    const finalQuery = { where : prismaQuery.where, data : dataQuery.data };
+    console.log("FINALQUERY: ", finalQuery);
+    try
+    {
+    categoryToUpdate = await prisma.Category.update(finalQuery);
+    }
+    catch(error)
+    {
+        // Se si verifica un errore in update dovrò cancellare il file che multer ha posizionato in cartella
+        // Se la variabile thumb non è nulla può voler dire due cose:
+        // 1) volevo caricare un file immagine (che multer ha già posizionato) e che dovrò quindi rimuovere
+        // 2) avevo chiesto di mantenere la vecchia immagine (in questo caso non dovrò cancellarla)
+        if ((thumb) && (thumb !== previousFile.thumb))
+            deleteFile(thumb, splitMime(thumbMime)[1]);
+        // {
+        //     const fileToDelete = pathLibrary.resolve(__dirname, "../../public/", thumbFolderName, thumb.concat(".", splitMime(thumbMime)[1]));
+        //     fileSystem.unlinkSync(fileToDelete);
+        // }
+        return next( new ErrorFromDB("Operazione non eseguibile al momento."));
+    }
+    // Se invece tutto è andato a buon fine, si procede alla cancellazione della vecchia thumb, se esistente
+    if (previousFile.thumb)
+        deleteFile(previousFile.thumb, splitMime(previousFile.thumbMime)[1]);
+    // {
+    //     const fileToDelete = pathLibrary.resolve(__dirname, "../../public/", thumbFolderName, previousFile.thumb.concat(".", splitMime(previousFile.thumbMime)[1]));
+    //     fileSystem.unlinkSync(fileToDelete);
+    // }
+    console.log("Categoria modificata in... ", categoryToUpdate);
+    res.json({ category_updated_to : categoryToUpdate });
 }
 
 async function destroy(req, res, next)
@@ -188,6 +283,8 @@ async function destroy(req, res, next)
             // categoryToDelete = await prisma.Category.delete(fakeQuery);
             categoryToDelete = await prisma.Category.delete(prismaQuery);
             console.log("Categoria cancellata con successo: ", categoryToDelete);
+            if (categoryToDelete.thumb)
+                deleteFile(categoryToDelete.thumb, splitMime(categoryToDelete.thumbMime)[1]);
             res.json({ category_deleted : categoryToDelete });
     }
     catch(error)

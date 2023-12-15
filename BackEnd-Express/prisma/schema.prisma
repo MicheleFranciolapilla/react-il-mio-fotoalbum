@@ -32,6 +32,7 @@ model Category {
   name      String    @db.VarChar(25)
   slug      String    @db.VarChar(25) @unique
   thumb     String?   @db.VarChar(255)
+  thumbMime String?   @db.VarChar(25)
 
   pictures  Picture[] 
 
