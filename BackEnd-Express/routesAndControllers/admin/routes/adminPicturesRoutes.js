@@ -8,8 +8,8 @@ const   controller = require("../controllers/adminPicturesController");
 
 router.get("/", controller.index);
 router.get("/:id", controller.show);
-router.post("/", controller.store);
-router.put("/:id", controller.update);
+router.post("/", imageUploader, controller.store);
+router.put("/:id", imageUploader, controller.update);
 router.delete("/:id", controller.destroy);
 
 module.exports = router;

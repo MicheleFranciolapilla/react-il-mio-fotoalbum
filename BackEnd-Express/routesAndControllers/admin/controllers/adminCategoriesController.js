@@ -10,6 +10,8 @@ const   ErrorInvalidName = require("../../../exceptionsAndMiddlewares/exceptions
 
 const   thumbFolderName = "imagesForCategories";
 
+// ******************************************************************************************************************************************TESTARE IL COMPORTAMENTO DELLE PICTURES COLLEGATE ALLE CATEGORIES CANCELLATE O MODIFICATE*****************************************************************************************************************************************************************************************************
+
 async function idBySlug(slugToCheck)
 {
     let categoryWithSlug = null;
