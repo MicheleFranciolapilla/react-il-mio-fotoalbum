@@ -6,4 +6,4 @@ const controller = require("../controllers/guestPicturesController");
 router.get("/", controller.index);
 router.get("/:id", controller.show);
 
-module.exports = router;
+module.exports = router; 

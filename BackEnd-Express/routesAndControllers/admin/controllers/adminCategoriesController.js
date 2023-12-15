@@ -1,33 +1,14 @@
 const   { PrismaClient } = require("@prisma/client");
 const   prisma = new PrismaClient();
-const   fileSystem = require("fs");
-const   pathLibrary = require("path");
 
 const   { pureSlug } = require("../../../utilities/slugUtilities/slugFunctions");
+const   { splitMime, fileWithExt, deleteFile } = require("../../../utilities/filesUtilities");
 
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
 const   ErrorInvalidName = require("../../../exceptionsAndMiddlewares/exceptions/exceptionsOnCategories/ErrorInvalidName");
 
 const   thumbFolderName = "imagesForCategories";
-
-function splitMime(fileMime)
-{  
-    const result = fileMime.split("/");
-    return result; 
-}
-
-function fileWithExt(fileObj)
-{
-    const extension = splitMime(fileObj.mimetype)[1];
-    fileSystem.renameSync(fileObj.path, fileObj.path.concat(".", extension));
-}
-
-function deleteFile(fileName, fileExtension)
-{
-    const fileToDelete = pathLibrary.resolve(__dirname, "../../../public/", thumbFolderName, fileName.concat(".", fileExtension));
-    fileSystem.unlinkSync(fileToDelete);
-}
 
 async function idBySlug(slugToCheck)
 {
@@ -112,13 +93,13 @@ async function store(req, res, next)
     if (checkIdBySlug === -1)
     {
         if (thumb)
-            deleteFile(thumb, splitMime(thumbMime)[1]);
+            deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
     else if (checkIdBySlug !== 0)
     {
         if (thumb)
-            deleteFile(thumb, splitMime(thumbMime)[1]);
+            deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
         return next( new ErrorInvalidName("Nome della categoria non valido.") );
     }
     console.log("NAME: ", name, " SLUG: ", slug, " THUMB: ", thumb, "MIME: ", thumbMime);
@@ -140,14 +121,14 @@ async function store(req, res, next)
         else
         {
             if (thumb)
-                deleteFile(thumb, splitMime(thumbMime)[1]);
+                deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
             return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
         }
     }
     catch(error)
     {
         if (thumb)
-            deleteFile(thumb, splitMime(thumbMime)[1]);
+            deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
 }
@@ -180,7 +161,7 @@ async function update(req, res, next)
         {
             console.log("ERRORE LANCIATO");
             if (thumb)
-                deleteFile(thumb, splitMime(thumbMime)[1]);
+                deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
             return next( new ErrorItemNotFound("Categoria non trovata") );
         }
     }
@@ -188,7 +169,7 @@ async function update(req, res, next)
     {
         console.log("VERO ERRORE");
         if (thumb)
-            deleteFile(thumb, splitMime(thumbMime)[1]);
+            deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
     console.log("SI PROSEGUE");
@@ -198,13 +179,13 @@ async function update(req, res, next)
     if (checkIdBySlug == -1)
     {
         if (thumb)
-            deleteFile(thumb, splitMime(thumbMime)[1]);
+            deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
     else if ((checkIdBySlug !== 0) && (checkIdBySlug !== categoryToUpdate.id))
     {
         if (thumb)
-            deleteFile(thumb, splitMime(thumbMime)[1]);
+            deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
         return next( new ErrorInvalidName("Nome della categoria non valido.") );     
     }
     const previousFile = { thumb : categoryToUpdate.thumb, thumbMime : categoryToUpdate.thumbMime};  
@@ -216,7 +197,6 @@ async function update(req, res, next)
         thumbMime = previousFile.thumbMime;
     }
 
-    console.log("PATH: ", pathLibrary.resolve(__dirname, "../../../public/", thumbFolderName, thumb.concat(".", splitMime(thumbMime)[1])));
     console.log("NAME: ", name, " SLUG: ", slug, " THUMB: ", thumb, "MIME: ", thumbMime);
     let dataQuery = { data : { "name" : name, "slug" : slug, "thumb" : thumb, "thumbMime" : thumbMime } }
     // Si manterranno le connessioni con le pictures solo se lo slug è rimasto invariato il che significa che si sta modificando la thumb o il nome in maniera non significativa (MA SOLO SE KEEP E' TRUE), altrimenti si perderanno le connessioni (SLUG DIFFERENTI O KEEP FALSE O ASSENTE)
@@ -240,12 +220,12 @@ async function update(req, res, next)
         // 1) volevo caricare un file immagine (che multer ha già posizionato) e che dovrò quindi rimuovere
         // 2) avevo chiesto di mantenere la vecchia immagine (in questo caso non dovrò cancellarla)
         if ((thumb) && (thumb !== previousFile.thumb))
-            deleteFile(thumb, splitMime(thumbMime)[1]);
+            deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento."));
     }
     // Se invece tutto è andato a buon fine, si procede alla cancellazione della vecchia thumb, se esistente
     if (previousFile.thumb)
-        deleteFile(previousFile.thumb, splitMime(previousFile.thumbMime)[1]);
+        deleteFile(previousFile.thumb, thumbFolderName, splitMime(previousFile.thumbMime)[1]);
     console.log("Categoria modificata in... ", categoryToUpdate);
     res.json({ category_updated_to : categoryToUpdate });
 }
@@ -271,7 +251,7 @@ async function destroy(req, res, next)
             categoryToDelete = await prisma.Category.delete(prismaQuery);
             console.log("Categoria cancellata con successo: ", categoryToDelete);
             if (categoryToDelete.thumb)
-                deleteFile(categoryToDelete.thumb, splitMime(categoryToDelete.thumbMime)[1]);
+                deleteFile(categoryToDelete.thumb, thumbFolderName, splitMime(categoryToDelete.thumbMime)[1]);
             res.json({ category_deleted : categoryToDelete });
     }
     catch(error)
@@ -281,4 +261,4 @@ async function destroy(req, res, next)
     }
 }
 
-module.exports = { index, index_all, show, store, update, destroy }
+module.exports = { index, show, store, update, destroy }
