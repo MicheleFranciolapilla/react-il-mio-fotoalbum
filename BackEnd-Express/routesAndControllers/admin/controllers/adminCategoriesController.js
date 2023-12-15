@@ -190,10 +190,14 @@ async function update(req, res, next)
             deleteFile(thumb, thumbFolderName, splitMime(thumbMime)[1]);
         return next( new ErrorInvalidName("Nome della categoria non valido.") );     
     }
+
     const previousFile = { thumb : categoryToUpdate.thumb, thumbMime : categoryToUpdate.thumbMime};  
     const { keepPreviousThumb } = req.body;
+    let booleanKeep = false;
+    if (keepPreviousThumb)
+        booleanKeep = ((keepPreviousThumb.trim().toLowerCase() === "true") || (keepPreviousThumb.trim() === "1"))
         
-    if ((!thumb) && (keepPreviousThumb))
+    if ((!thumb) && (booleanKeep))
     {
         thumb = previousFile.thumb;
         thumbMime = previousFile.thumbMime;
@@ -226,7 +230,7 @@ async function update(req, res, next)
         return next( new ErrorFromDB("Operazione non eseguibile al momento."));
     }
     // Se invece tutto è andato a buon fine, si procede alla cancellazione della vecchia thumb, se esistente
-    if (previousFile.thumb)
+    if ((previousFile.thumb) && (thumb !== previousFile.thumb))
         deleteFile(previousFile.thumb, thumbFolderName, splitMime(previousFile.thumbMime)[1]);
     console.log("Categoria modificata in... ", categoryToUpdate);
     res.json({ category_updated_to : categoryToUpdate });

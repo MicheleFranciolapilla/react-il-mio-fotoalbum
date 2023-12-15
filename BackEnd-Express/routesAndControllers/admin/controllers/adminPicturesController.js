@@ -63,6 +63,7 @@ async function store(req, res, next)
             console.log("CATEGORIE FILTRATE: ", allCategoriesIds);
         }
     }
+
     const prismaQuery = {   data    :   { 
                                             title       :   title, 
                                             description :   description,
@@ -73,7 +74,11 @@ async function store(req, res, next)
                                                                 connect :   allCategoriesIds.map( cat => ({ "id" : parseInt(cat) }) )
                                                             },
                                             userId      :   parseInt(userId)
-                                        } 
+                                        },
+                            include :   {
+                                            user        :   true,
+                                            categories  :   true
+                                        }
                         };
     console.log("QUERY: ", prismaQuery);
     let newPicture = null;
@@ -107,7 +112,28 @@ async function update(req, res, next)
 
 async function destroy(req, res, next)
 {
-
+    const id = parseInt(req.params.id);
+    const prismaQuery = { where : { "id" : id } };
+    let pictureToDelete = null;
+    try
+    {
+        pictureToDelete = await prisma.Picture.findUnique(prismaQuery);
+            if (!pictureToDelete)
+            {
+                console.log("ERRORE LANCIATO");
+                return next( new ErrorItemNotFound("Picture non trovata") );
+            }
+            pictureToDelete = await prisma.Picture.delete(prismaQuery);
+            console.log("Picture cancellata con successo: ", pictureToDelete);
+            if (pictureToDelete.image)
+                deleteFile(pictureToDelete.image, imageFolderName, splitMime(pictureToDelete.imageMime)[1]);
+            res.json({ picture_deleted : pictureToDelete });
+    }
+    catch(error)
+    {
+        console.log("VERO ERRORE")
+        return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
 }
 
 module.exports = { index, show, store, update, destroy }
