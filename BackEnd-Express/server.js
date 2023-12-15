@@ -2,10 +2,10 @@ const   dotenv = require("dotenv").config();
 const   express = require("express");
 
 // Controllers
-const   homeController = require("./routesAndControllers/controllers/homeController");
+const   homeController = require("./routesAndControllers/guest/controllers/homeController");
 
 // Routers
-const   routerForCategories = require("./routesAndControllers/routes/categoriesRoutes");
+const   routerForCategories = require("./routesAndControllers/admin/routes/categoriesRoutes");
 
 // Middlewares
 const   error404 = require("./exceptionsAndMiddlewares/middlewares/error404RouteNotFound");
@@ -26,7 +26,7 @@ const   server = express();
         server.get("/", homeController.home);
         server.get("/home", homeController.home);
         // categories
-        server.use("/categories", routerForCategories);
+        server.use("/admin/categories", routerForCategories);
 
         // Middlewares errori
         server.use(error404);

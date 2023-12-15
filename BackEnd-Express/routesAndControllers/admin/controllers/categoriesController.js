@@ -3,11 +3,11 @@ const   prisma = new PrismaClient();
 const   fileSystem = require("fs");
 const   pathLibrary = require("path");
 
-const   { pureSlug } = require("../../utilities/slugUtilities/slugFunctions");
+const   { pureSlug } = require("../../../utilities/slugUtilities/slugFunctions");
 
-const   ErrorFromDB = require("../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
-const   ErrorItemNotFound = require("../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
-const   ErrorInvalidName = require("../../exceptionsAndMiddlewares/exceptions/exceptionsOnCategories/ErrorInvalidName");
+const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
+const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
+const   ErrorInvalidName = require("../../../exceptionsAndMiddlewares/exceptions/exceptionsOnCategories/ErrorInvalidName");
 
 const   thumbFolderName = "imagesForCategories";
 
@@ -25,7 +25,7 @@ function fileWithExt(fileObj)
 
 function deleteFile(fileName, fileExtension)
 {
-    const fileToDelete = pathLibrary.resolve(__dirname, "../../public/", thumbFolderName, fileName.concat(".", fileExtension));
+    const fileToDelete = pathLibrary.resolve(__dirname, "../../../public/", thumbFolderName, fileName.concat(".", fileExtension));
     fileSystem.unlinkSync(fileToDelete);
 }
 
@@ -77,8 +77,8 @@ async function index_all(req, res, next)
 async function show(req, res, next)
 {
     // Per ora diamo per scontato che l'argomento (slug o id che sia) abbia superato la validazione e che il validatore stesso abbia predisposta in req un campo { "slug" : slug } oppure { "id" : id }
-    // const argument = { "id" : parseInt(req.params.arg) };
-    const argument = { "slug" : req.params.arg }
+    const argument = { "id" : parseInt(req.params.arg) };
+    // const argument = { "slug" : req.params.arg }
     const prismaQuery = { where : argument };
     let categoryToFind = null;
     try
@@ -221,7 +221,7 @@ async function update(req, res, next)
         thumbMime = previousFile.thumbMime;
     }
 
-    console.log("PATH: ", pathLibrary.resolve(__dirname, "../../public/", thumbFolderName, thumb.concat(".", splitMime(thumbMime)[1])));
+    console.log("PATH: ", pathLibrary.resolve(__dirname, "../../../public/", thumbFolderName, thumb.concat(".", splitMime(thumbMime)[1])));
     console.log("NAME: ", name, " SLUG: ", slug, " THUMB: ", thumb, "MIME: ", thumbMime);
     let dataQuery = { data : { "name" : name, "slug" : slug, "thumb" : thumb, "thumbMime" : thumbMime } }
     // Si manterranno le connessioni con le pictures solo se lo slug è rimasto invariato il che significa che si sta modificando la thumb o il nome in maniera non significativa (MA SOLO SE KEEP E' TRUE), altrimenti si perderanno le connessioni (SLUG DIFFERENTI O KEEP FALSE O ASSENTE)
@@ -246,19 +246,11 @@ async function update(req, res, next)
         // 2) avevo chiesto di mantenere la vecchia immagine (in questo caso non dovrò cancellarla)
         if ((thumb) && (thumb !== previousFile.thumb))
             deleteFile(thumb, splitMime(thumbMime)[1]);
-        // {
-        //     const fileToDelete = pathLibrary.resolve(__dirname, "../../public/", thumbFolderName, thumb.concat(".", splitMime(thumbMime)[1]));
-        //     fileSystem.unlinkSync(fileToDelete);
-        // }
         return next( new ErrorFromDB("Operazione non eseguibile al momento."));
     }
     // Se invece tutto è andato a buon fine, si procede alla cancellazione della vecchia thumb, se esistente
     if (previousFile.thumb)
         deleteFile(previousFile.thumb, splitMime(previousFile.thumbMime)[1]);
-    // {
-    //     const fileToDelete = pathLibrary.resolve(__dirname, "../../public/", thumbFolderName, previousFile.thumb.concat(".", splitMime(previousFile.thumbMime)[1]));
-    //     fileSystem.unlinkSync(fileToDelete);
-    // }
     console.log("Categoria modificata in... ", categoryToUpdate);
     res.json({ category_updated_to : categoryToUpdate });
 }
