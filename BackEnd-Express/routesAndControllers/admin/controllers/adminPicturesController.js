@@ -29,7 +29,29 @@ async function getAllCategoriesIds()
 
 async function index(req, res, next)
 {
-
+    // Implementare un controllo che eviti di avere un currentPage nullo o superiore al numero di pagine possibili con l'attuale itemsPerPage
+    // Implementare la logica delle query filters
+    let itemsPerPage = 4;
+    const currentPage = req.query.page || 1;
+    let prismaQuery =   {   
+                            skip    :   (currentPage - 1) * itemsPerPage, 
+                            take    :   itemsPerPage,
+                            include :   {
+                                            user        :   true,
+                                            categories  :   true 
+                                        } 
+                        };
+    let pictures = [];
+    try
+    {
+        pictures = await prisma.Picture.findMany(prismaQuery);
+        console.log("PICTURES TROVATE ", pictures);
+        res.json({ "pictures" : pictures });
+    }
+    catch(error)
+    {
+        return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
 }
 
 async function show(req, res, next)
