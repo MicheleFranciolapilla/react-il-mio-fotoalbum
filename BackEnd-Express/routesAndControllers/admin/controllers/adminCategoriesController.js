@@ -217,7 +217,7 @@ async function update(req, res, next)
     console.log("FINALQUERY: ", finalQuery);
     try
     {
-    categoryToUpdate = await prisma.Category.update(finalQuery);
+        categoryToUpdate = await prisma.Category.update(finalQuery);
     }
     catch(error)
     {

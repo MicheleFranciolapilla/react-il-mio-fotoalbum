@@ -88,7 +88,9 @@ async function store(req, res, next)
     // Validazioni su tipo ed esistenza dei dati da effettuare
     const { file } = req;
     fileWithExt(file);
-    const { title, description, visible, userId, categories } = req.body;
+    let { title, description, visible, userId, categories } = req.body;
+    if (!visible)
+        visible = "";
     let allCategoriesIds = [];
     console.log("CATEGORIES RICEVUTE IN INPUT: ", categories);
     // Se sono state richiesti dei collegamenti con specifiche categorie, da parte del client, si verifica che esse siano effettivamente esistenti, in caso contrario le si rimuove, questo per garantire comunque il salvataggio dei dati senza incorrere in errori
@@ -153,7 +155,98 @@ async function store(req, res, next)
 
 async function update(req, res, next)
 {
+    const id = parseInt(req.params.id);
+    // Il principio da adottare in questa update è il seguente:
+    // si da la possibilità di modificare solo alcuni elementi, lasciando invariata la foto (nel qual caso la si può non ricaricare)
+    let prismaQuery = { where : { "id" : id } };
+    let { title, description, visible, userId, categories } = req.body;
+    if (!visible)
+        visible = "";
+    const { file } = req;
+    let image = null;
+    let imageMime = null;
+    // Prevedere controlli sulla tipologia di file
+    if (file)
+    {
+        console.log(file);
+        image = file.filename;
+        imageMime = file.mimetype;
+        fileWithExt(file);
+    }
+    let pictureToUpdate = null;
+    try
+    {
+        pictureToUpdate = await prisma.Picture.findUnique(prismaQuery);
+        if (!pictureToUpdate)
+        {
+            console.log("ERRORE LANCIATO");
+            if (image)
+                deleteFile(image, imageFolderName, splitMime(imageMime)[1]);
+            return next( new ErrorItemNotFound("Picture non trovata") );
+        }
+    }
+    catch(error)
+    {
+        console.log("VERO ERRORE");
+        if (image)
+            deleteFile(image, imageFolderName, splitMime(imageMime)[1]);
+        return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
+    console.log("SI PROSEGUE, QUINDI LA PICTURE DA MODIFICARE ESISTE");
 
+    let allCategoriesIds = [];
+    console.log("CATEGORIES RICEVUTE IN INPUT: ", categories);
+    // Se sono state richiesti dei collegamenti con specifiche categorie, da parte del client, si verifica che esse siano effettivamente esistenti, in caso contrario le si rimuove, questo per garantire comunque il salvataggio dei dati senza incorrere in errori
+    if (categories)
+    {
+        allCategoriesIds = await getAllCategoriesIds();
+        if (allCategoriesIds === null)
+        {
+            console.log("ERRORE IN GETALLCATEGORIESIDS");
+            if (image)
+                deleteFile(image, imageFolderName, splitMime(imageMime)[1]);
+            return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+        }
+        else if (allCategoriesIds.length !== 0)
+        {
+            console.log("FILTRIAMO LE CATEGORIE DI MODO CHE PASSINO SOLO QUELLE EFFETTIVAMENTE PRESENTI NEL DB");
+            const newArray = categories.filter( cat => allCategoriesIds.includes(parseInt(cat)) );
+            allCategoriesIds = newArray;
+            console.log("CATEGORIE FILTRATE: ", allCategoriesIds);
+        }
+    }
+
+    const previousFile = { image : pictureToUpdate.image, imageMime : pictureToUpdate.imageMime};  
+
+    prismaQuery["data"] =   { 
+                                title       :   title, 
+                                description :   description,
+                                visible     :   ((visible.trim().toLowerCase() === "true") || (visible.trim() === "1")),
+                                image       :   image ?? previousFile.image,
+                                imageMime   :   imageMime ?? previousFile.imageMime,
+                                categories  :   {
+                                                    connect :   allCategoriesIds.map( cat => ({ "id" : parseInt(cat) }) )
+                                                },
+                                userId      :   parseInt(userId)
+                            };
+    console.log("QUERY: ", prismaQuery);
+
+    try
+    {
+        pictureToUpdate = await prisma.Picture.update(prismaQuery);
+    }
+    catch(error)
+    {
+        // Se si verifica un errore in update dovrò cancellare il file che multer ha posizionato in cartella (laddove il client non abbia scelto di mantenere il precedente)
+        if (image)
+            deleteFile(image, imageFolderName, splitMime(imageMime)[1]);
+        return next( new ErrorFromDB("Operazione non eseguibile al momento."));
+    }
+    // Se invece tutto è andato a buon fine, si procede alla cancellazione della vecchia immagine, laddove ve ne sia una nuova in sostituzione
+    if (image)
+        deleteFile(previousFile.image, imageFolderName, splitMime(previousFile.imageMime)[1]);
+    console.log("Picture modificata in... ", pictureToUpdate);
+    res.json({ picture_updated_to : pictureToUpdate });
 }
 
 async function destroy(req, res, next)
