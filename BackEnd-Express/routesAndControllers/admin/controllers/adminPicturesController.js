@@ -70,6 +70,12 @@ async function index(req, res, next)
     {
         pictures = await prisma.Picture.findMany(prismaQuery);
         console.log("PICTURES TROVATE ", pictures);
+        const noPswPictures = pictures.map( item => 
+            {
+                noPswItem = removePassword(item);
+                return noPswItem;
+            });
+        pictures = noPswPictures;
         res.json(   { 
                         "pictures"      :   pictures,
                         "paging_data"   :   {
@@ -107,6 +113,7 @@ async function show(req, res, next)
         if (pictureToFind)
         {
             console.log("Picture cercata e trovata: ", pictureToFind);
+            pictureToFind = removePassword(pictureToFind);
             res.json({ picture : pictureToFind });
         }
         else
@@ -293,6 +300,7 @@ async function update(req, res, next)
     if (image)
         deleteFile(previousFile.image, imageFolderName, splitMime(previousFile.imageMime)[1]);
     console.log("Picture modificata in... ", pictureToUpdate);
+    pictureToUpdate = removePassword(pictureToUpdate);
     res.json({ picture_updated_to : pictureToUpdate });
 }
 
@@ -318,7 +326,9 @@ async function destroy(req, res, next)
             console.log("Picture cancellata con successo: ", pictureToDelete);
             if (pictureToDelete.image)
                 deleteFile(pictureToDelete.image, imageFolderName, splitMime(pictureToDelete.imageMime)[1]);
+            pictureToDelete = removePassword(pictureToDelete);
             res.json({ picture_deleted : pictureToDelete });
+            return;
     }
     catch(error)
     {
