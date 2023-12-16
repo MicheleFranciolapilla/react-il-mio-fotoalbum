@@ -1,0 +1,5 @@
+[
+    { "title_includes"  :   "string" },
+    { "author_id"       :   "number" },
+    { "category_id"     :   "number" }
+]

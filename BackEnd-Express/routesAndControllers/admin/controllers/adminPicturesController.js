@@ -178,7 +178,9 @@ async function store(req, res, next)
         if (newPicture)
         {
             console.log("Picture creata: ", newPicture);
+            newPicture = removePassword(newPicture);
             res.json({ new_picture : newPicture });
+            return;
         }
         else
         {

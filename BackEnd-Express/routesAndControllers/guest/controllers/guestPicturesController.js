@@ -2,12 +2,21 @@ const   { PrismaClient } = require("@prisma/client");
 const   prisma = new PrismaClient();
 
 const   { removePassword } = require("../../../utilities/passwords");
+const   { retrieveValidFilters } = require("../../../utilities/filterUtilities/filteringFunctions");
 
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
 
 async function index(req, res, next)
 {
+    const { filter } = req.body;
+    console.log(filter);
+    if (filter)
+    {
+        console.log("FILTRI ALL'ORIGINE: ", filter);
+        const validFilters = retrieveValidFilters(filter, false);
+        console.log("FILTRI VALIDI: ", validFilters);
+    }
     let prismaQuery = { "where" : { "visible" : true } };
     let totalPicturesAvailable = null;
     try
