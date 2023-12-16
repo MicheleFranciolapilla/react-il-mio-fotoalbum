@@ -1,0 +1,7 @@
+[
+    { "title_includes"  :   "title//contains"},
+
+    { "author_id"       :   "userId"},
+
+    { "category_id"     :   "categories//some//id" }
+]

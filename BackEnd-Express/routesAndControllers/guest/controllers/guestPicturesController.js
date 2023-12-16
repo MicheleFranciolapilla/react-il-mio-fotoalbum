@@ -2,7 +2,7 @@ const   { PrismaClient } = require("@prisma/client");
 const   prisma = new PrismaClient();
 
 const   { removePassword } = require("../../../utilities/passwords");
-const   { retrieveValidFilters, avoidDuplicates } = require("../../../utilities/filterUtilities/filteringFunctions");
+const   { retrieveValidFilters, avoidDuplicates, buildWhereQuery } = require("../../../utilities/filterUtilities/filteringFunctions");
 
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
@@ -11,13 +11,15 @@ async function index(req, res, next)
 {
     const { filter } = req.body;
     console.log(filter);
+    let prismaQuery = { "where" : { "visible" : true } };
     if (filter)
     {
         console.log("FILTRI ALL'ORIGINE: ", filter);
-        const validFilters = avoidDuplicates(retrieveValidFilters(filter, false), true);
+        const validFilters = avoidDuplicates(retrieveValidFilters(filter, false), true, true);
         console.log("FILTRI VALIDI: ", validFilters);
+        const thequery = buildWhereQuery(prismaQuery, validFilters, false);
+        console.log("THE QUERY IS: ",thequery);
     }
-    let prismaQuery = { "where" : { "visible" : true } };
     let totalPicturesAvailable = null;
     try
     {

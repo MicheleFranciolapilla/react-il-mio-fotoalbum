@@ -1,5 +1,7 @@
 const   guestFilters = require("./allowedFilters/guestFilters.json");
 const   adminFilters = require("./allowedFilters/adminFilters.json");
+const   guestQueries = require("./allowedQueries/guestQueries.json");
+const   adminQueries = require("./allowedQueries/adminQueries.json");
 
 function retrieveValidFilters(filtersFromBody, admin)
 {
@@ -7,18 +9,13 @@ function retrieveValidFilters(filtersFromBody, admin)
     const allowedFilters = admin ? adminFilters : guestFilters;
     const filtersKeys = Object.keys(filtersFromBody).map( bodyKey => bodyKey);
     let finalFilters = [];
-    console.log("*****************************************");
-    console.log("***** RETRIEVE FUNCTION *****************");
     filtersKeys.forEach( bodyKey =>
         {
-            console.log("KEY ATTUALE: ", bodyKey, " : ",filtersFromBody[bodyKey]);
             const bodyKeyLC = bodyKey.trim().toLowerCase();
             const index = allowedFilters.findIndex( validFilter => Object.keys(validFilter).includes(bodyKeyLC));
             if (index >= 0)
             {
                 const validFilter = allowedFilters[index];
-                console.log("VALID FILTER: ", validFilter);
-                console.log
                 const validType = Object.values(validFilter)[0];
                 if  ((validType === "number") && (!isNaN(parseInt(filtersFromBody[bodyKey]))))
                     finalFilters.push({ [bodyKeyLC] : parseInt(filtersFromBody[bodyKey]) })
@@ -26,12 +23,10 @@ function retrieveValidFilters(filtersFromBody, admin)
                     finalFilters.push({ [bodyKeyLC] : filtersFromBody[bodyKey] })
             }
         });
-    console.log("FINALE: ", finalFilters);
-    console.log("*****************************************");
     return finalFilters;
 }
 
-function avoidDuplicates(filtersToFix, firstIsValid)
+function avoidDuplicates(filtersToFix, firstIsValid, stringValueToLowerCase)
 {
     // ARRAY DI OGGETTI IN ENTRATA, OGGETTO IN USCITA
     let arrayToReduce = [...filtersToFix];
@@ -41,10 +36,34 @@ function avoidDuplicates(filtersToFix, firstIsValid)
     arrayToReduce.forEach( item =>
         {
             const itemKey = Object.keys(item)[0];
-            const itemValue = Object.values(item)[0];
+            let itemValue = Object.values(item)[0];
+            if (stringValueToLowerCase && typeof itemValue === "string")
+                itemValue = itemValue.trim().toLowerCase();
             objToReturn[itemKey] = itemValue;
         });
     return objToReturn;
 }
 
-module.exports = { retrieveValidFilters, avoidDuplicates };
+function buildWhereQuery(initialWhereQuery, filtersObj, admin)
+{
+    // OGGETTO IN ENTRATA E QUERY OBJECT (WHERE) IN USCITA
+    const queryPattern = admin ? adminQueries : guestQueries;
+    let query = { ...initialWhereQuery };
+    for (key in filtersObj)
+    {
+        const currentPattern = queryPattern.find( item => Object.keys(item).includes(key) );
+        const pattern = Object.values(currentPattern)[0];
+        const splittedPattern = pattern.split("//");
+        let currentObjectValue = filtersObj[key];
+        for (let index = splittedPattern.length - 1; index >= 1; index--)
+        {
+            let currentObjectKey = splittedPattern[index];
+            let currentObject = { [currentObjectKey] : currentObjectValue };
+            currentObjectValue = currentObject;
+        }
+        query[splittedPattern[0]] = currentObjectValue;
+    }
+    return query;
+}
+
+module.exports = { retrieveValidFilters, avoidDuplicates, buildWhereQuery };
