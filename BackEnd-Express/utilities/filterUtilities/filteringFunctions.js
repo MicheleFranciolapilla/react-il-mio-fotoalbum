@@ -3,6 +3,7 @@ const   adminFilters = require("./allowedFilters/adminFilters.json");
 
 function retrieveValidFilters(filtersFromBody, admin)
 {
+    // OGGETTO IN ENTRATA, ARRAY DI OGGETTI IN USCITA
     const allowedFilters = admin ? adminFilters : guestFilters;
     const filtersKeys = Object.keys(filtersFromBody).map( bodyKey => bodyKey);
     let finalFilters = [];
@@ -25,8 +26,25 @@ function retrieveValidFilters(filtersFromBody, admin)
                     finalFilters.push({ [bodyKeyLC] : filtersFromBody[bodyKey] })
             }
         });
+    console.log("FINALE: ", finalFilters);
     console.log("*****************************************");
     return finalFilters;
 }
 
-module.exports = { retrieveValidFilters };
+function avoidDuplicates(filtersToFix, firstIsValid)
+{
+    // ARRAY DI OGGETTI IN ENTRATA, OGGETTO IN USCITA
+    let arrayToReduce = [...filtersToFix];
+    if (firstIsValid)
+        arrayToReduce.reverse();
+    let objToReturn = {};
+    arrayToReduce.forEach( item =>
+        {
+            const itemKey = Object.keys(item)[0];
+            const itemValue = Object.values(item)[0];
+            objToReturn[itemKey] = itemValue;
+        });
+    return objToReturn;
+}
+
+module.exports = { retrieveValidFilters, avoidDuplicates };
