@@ -16,14 +16,26 @@ async function seedInitialUsers()
     const userPsw = await hashPassword(process.env.PSW_FOR_SEEDING, 10);
     const michele = await prisma.user.upsert(
         {
-            where   :   {   email   :   userEmail   },
-            update  :   {},
-            create  :   {
-                            name        :   userName,
-                            surname     :   userSurname,
-                            email       :   userEmail,
-                            password    :   userPsw
-                        }
+            "where"   :   { "email"     : userEmail },
+            "update"  :   {},
+            "create"  :   {
+                            "name"      : userName,
+                            "surname"   : userSurname,
+                            "email"     : userEmail,
+                            "password"  : userPsw
+                          }
+        });
+    const fakeUserPsw = await hashPassword("fake-password", 10);
+    const fakeUser = await prisma.user.upsert(
+        {
+            "where"   :   { "email"     : "fake@email.com" },
+            "update"  :   {},
+            "create"  :   {
+                            "name"      : "fake name",
+                            "surname"   : "fake surname",
+                            "email"     : "fake@email.com",
+                            "password"  : fakeUserPsw
+                          }
         });
 }
 

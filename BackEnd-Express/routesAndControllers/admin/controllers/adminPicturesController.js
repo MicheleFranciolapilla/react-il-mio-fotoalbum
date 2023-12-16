@@ -31,15 +31,16 @@ async function index(req, res, next)
 {
     // Implementare un controllo che eviti di avere un currentPage nullo o superiore al numero di pagine possibili con l'attuale itemsPerPage
     // Implementare la logica delle query filters
+    const { userId } = req.body;
     let itemsPerPage = 4;
     const currentPage = req.query.page || 1;
-    let prismaQuery =   {   
-                            skip    :   (currentPage - 1) * itemsPerPage, 
-                            take    :   itemsPerPage,
-                            include :   {
-                                            user        :   true,
-                                            categories  :   true 
-                                        } 
+    let prismaQuery =   {   "where"     :   {   "userId"        : parseInt(userId) },
+                            "skip"      :   (currentPage - 1) * itemsPerPage, 
+                            "take"      :   itemsPerPage,
+                            "include"   :   {
+                                                "user"          :   true,
+                                                "categories"    :   true 
+                                            } 
                         };
     let pictures = [];
     try
@@ -57,13 +58,15 @@ async function index(req, res, next)
 async function show(req, res, next)
 {
     const id = parseInt(req.params.id);
-    const prismaQuery = {   where   :   { 
-                                            "id"        :   id 
-                                        },
-                            include :   {
-                                            user        :   true,
-                                            categories  :   true
-                                        }
+    const { userId } = req.body;
+    const prismaQuery = {   "where"     :   { 
+                                                "id"            :   id,
+                                                "userId"        :   parseInt(userId)
+                                            },
+                            "include"   :   {
+                                                "user"          :   true,
+                                                "categories"    :   true
+                                            }
                         };
     let pictureToFind = null;
     try
@@ -112,21 +115,21 @@ async function store(req, res, next)
         }
     }
 
-    const prismaQuery = {   data    :   { 
-                                            title       :   title, 
-                                            description :   description,
-                                            visible     :   ((visible.trim().toLowerCase() === "true") || (visible.trim() === "1")),
-                                            image       :   file.filename,
-                                            imageMime   :   file.mimetype,
-                                            categories  :   {
-                                                                connect :   allCategoriesIds.map( cat => ({ "id" : parseInt(cat) }) )
-                                                            },
-                                            userId      :   parseInt(userId)
-                                        },
-                            include :   {
-                                            user        :   true,
-                                            categories  :   true
-                                        }
+    const prismaQuery = {   "data"      :   { 
+                                                "title"         :   title, 
+                                                "description"   :   description,
+                                                "visible"       :   ((visible.trim().toLowerCase() === "true") || (visible.trim() === "1")),
+                                                "image"         :   file.filename,
+                                                "imageMime"     :   file.mimetype,
+                                                "categories"    :   {
+                                                                        "connect"   :   allCategoriesIds.map( cat => ({ "id" : parseInt(cat) }) )
+                                                                    },
+                                                "userId"        :   parseInt(userId)
+                                            },
+                            "include"   :   {
+                                                "user"          :   true,
+                                                "categories"    :   true
+                                            }
                         };
     console.log("QUERY: ", prismaQuery);
     let newPicture = null;
@@ -140,14 +143,14 @@ async function store(req, res, next)
         }
         else
         {
-            console.log("ERRORE NON DA CATCH");
+            console.log("ERRORE NON DA CATCH-1");
             deleteFile(file.filename, imageFolderName, splitMime(file.mimetype)[1]);
             return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
         }
     }
     catch(error)
     {
-        console.log("ERRORE DA CATCH");
+        console.log("ERRORE DA CATCH-2");
         deleteFile(file.filename, imageFolderName, splitMime(file.mimetype)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
@@ -156,15 +159,19 @@ async function store(req, res, next)
 async function update(req, res, next)
 {
     const id = parseInt(req.params.id);
+    let { title, description, visible, userId, categories } = req.body;
+    if (!visible)
+        visible = "";
     // Il principio da adottare in questa update è il seguente:
     // si da la possibilità di modificare solo alcuni elementi, lasciando invariata la foto (nel qual caso la si può non ricaricare)
-    let prismaQuery =   {   where   :   {   
-                                            "id"    :   id 
-                                        },
-                            include :   {
-                                            "user"          :   true,
-                                            "categories"    :   true 
-                                        }
+    let prismaQuery =   {   "where"     :   {   
+                                                "id"            :   id,
+                                                "userId"        :   parseInt(userId) 
+                                            },
+                            "include"   :   {
+                                                "user"          :   true,
+                                                "categories"    :   true 
+                                            }
                         };
     const { file } = req;
     let image = null;
@@ -199,9 +206,7 @@ async function update(req, res, next)
     }
 
     console.log("SI PROSEGUE, QUINDI LA PICTURE DA MODIFICARE ESISTE");
-    let { title, description, visible, userId, categories } = req.body;
-    if (!visible)
-        visible = "";
+
     let allCategoriesIds = [];
     console.log("CATEGORIES RICEVUTE IN INPUT: ", categories);
     // Se sono state richiesti dei collegamenti con specifiche categorie, da parte del client, si verifica che esse siano effettivamente esistenti, in caso contrario le si rimuove, questo per garantire comunque il salvataggio dei dati senza incorrere in errori.
@@ -224,19 +229,19 @@ async function update(req, res, next)
         }
     }
 
-    const previousFile = { image : pictureToUpdate.image, imageMime : pictureToUpdate.imageMime};  
+    const previousFile = { "image" : pictureToUpdate.image, "imageMime" : pictureToUpdate.imageMime};  
 
     prismaQuery["data"] =   { 
-                                title       :   title, 
-                                description :   description,
-                                visible     :   ((visible.trim().toLowerCase() === "true") || (visible.trim() === "1")),
-                                image       :   image ?? previousFile.image,
-                                imageMime   :   imageMime ?? previousFile.imageMime,
-                                categories  :   {
-                                                    disconnect  :   pictureToUpdate.categories.map( cat => ({ "id" : cat.id}) ),
-                                                    connect     :   allCategoriesIds.map( cat => ({ "id" : parseInt(cat) }) )
-                                                },
-                                userId      :   parseInt(userId)
+                                "title"         :   title, 
+                                "description"   :   description,
+                                "visible"       :   ((visible.trim().toLowerCase() === "true") || (visible.trim() === "1")),
+                                "image"         :   image ?? previousFile.image,
+                                "imageMime"     :   imageMime ?? previousFile.imageMime,
+                                "categories"    :   {
+                                                        "disconnect"    :   pictureToUpdate.categories.map( cat => ({ "id" : cat.id}) ),
+                                                        "connect"       :   allCategoriesIds.map( cat => ({ "id" : parseInt(cat) }) )
+                                                    },
+                                "userId"        :   parseInt(userId)
                             };
     console.log("CATEGORIE CONNESSE: ", pictureToUpdate.categories);
     console.log("QUERY: ", prismaQuery);
@@ -262,7 +267,12 @@ async function update(req, res, next)
 async function destroy(req, res, next)
 {
     const id = parseInt(req.params.id);
-    const prismaQuery = { where : { "id" : id } };
+    const { userId } = req.body;
+    const prismaQuery = {   "where" :   { 
+                                            "id"        :   id,
+                                            "userId"    :   parseInt(userId)
+                                        } 
+                        };
     let pictureToDelete = null;
     try
     {
