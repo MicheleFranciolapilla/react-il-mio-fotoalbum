@@ -1,5 +1,5 @@
 [
-    { "title_includes"  :   "string" },
-    { "author_id"       :   "number" },
-    { "category_id"     :   "number" }
+    { "title_includes"  :   "string"  },
+    { "category_id"     :   "number"  },
+    { "visible"         :   "boolean" }
 ]

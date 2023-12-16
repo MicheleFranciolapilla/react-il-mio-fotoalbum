@@ -3,6 +3,7 @@ const   prisma = new PrismaClient();
 
 const   { splitMime, fileWithExt, deleteFile } = require("../../../utilities/filesUtilities");
 const   { removePassword } = require("../../../utilities/passwords");
+const   { retrieveValidFilters, avoidDuplicates, buildWhereQuery } = require("../../../utilities/filterUtilities/filteringFunctions");
 
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
@@ -30,9 +31,18 @@ async function getAllCategoriesIds()
 
 async function index(req, res, next)
 {
-    // Implementare la logica delle query filters
-    const { userId } = req.body;
+    const { userId, filter } = req.body;
+    console.log(filter);
     let prismaQuery = { "where" : { "userId" : parseInt(userId) } };
+    let validFilters = {};
+    if (filter)
+    {
+        console.log("FILTRI ALL'ORIGINE: ", filter);
+        validFilters = avoidDuplicates(retrieveValidFilters(filter, true), true, true);
+        console.log("FILTRI VALIDI: ", validFilters);
+        prismaQuery = buildWhereQuery(prismaQuery, validFilters, true);
+        console.log("THE QUERY IS: ",prismaQuery);
+    }
     let totalPicturesAvailable = null;
     try
     {
@@ -78,6 +88,7 @@ async function index(req, res, next)
         pictures = noPswPictures;
         res.json(   { 
                         "pictures"      :   pictures,
+                        "valid_filters" :   (Object.keys(validFilters).length !== 0) ? validFilters : "none",
                         "paging_data"   :   {
                                                 "total_pictures"    :   totalPicturesAvailable,
                                                 "total_pages"       :   total_pages,

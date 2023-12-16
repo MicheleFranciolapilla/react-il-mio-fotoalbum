@@ -3,6 +3,12 @@ const   adminFilters = require("./allowedFilters/adminFilters.json");
 const   guestQueries = require("./allowedQueries/guestQueries.json");
 const   adminQueries = require("./allowedQueries/adminQueries.json");
 
+function boolOf(boolStr)
+{
+    console.log("BOOLSTR: ", boolStr, " - ", typeof boolStr);
+    return ["true", "1"].includes(boolStr.trim().toLowerCase());
+}
+
 function retrieveValidFilters(filtersFromBody, admin)
 {
     // OGGETTO IN ENTRATA, ARRAY DI OGGETTI IN USCITA
@@ -18,9 +24,11 @@ function retrieveValidFilters(filtersFromBody, admin)
                 const validFilter = allowedFilters[index];
                 const validType = Object.values(validFilter)[0];
                 if  ((validType === "number") && (!isNaN(parseInt(filtersFromBody[bodyKey]))))
-                    finalFilters.push({ [bodyKeyLC] : parseInt(filtersFromBody[bodyKey]) })
+                    finalFilters.push({ [bodyKeyLC] : parseInt(filtersFromBody[bodyKey]) });
+                else if ((validType === "boolean") && (["false", "0", "true", "1"].includes(filtersFromBody[bodyKey].trim().toLowerCase())))
+                    finalFilters.push({ [bodyKeyLC] : boolOf(filtersFromBody[bodyKey]) });
                 else if (typeof filtersFromBody[bodyKey] === validType)
-                    finalFilters.push({ [bodyKeyLC] : filtersFromBody[bodyKey] })
+                    finalFilters.push({ [bodyKeyLC] : filtersFromBody[bodyKey] });
             }
         });
     return finalFilters;

@@ -12,10 +12,11 @@ async function index(req, res, next)
     const { filter } = req.body;
     console.log(filter);
     let prismaQuery = { "where" : { "visible" : true } };
+    let validFilters = {};
     if (filter)
     {
         console.log("FILTRI ALL'ORIGINE: ", filter);
-        const validFilters = avoidDuplicates(retrieveValidFilters(filter, false), true, true);
+        validFilters = avoidDuplicates(retrieveValidFilters(filter, false), true, true);
         console.log("FILTRI VALIDI: ", validFilters);
         prismaQuery = buildWhereQuery(prismaQuery, validFilters, false);
         console.log("THE QUERY IS: ",prismaQuery);
@@ -34,7 +35,6 @@ async function index(req, res, next)
     }
     catch(error)
     {
-        console.log(totalPicturesAvailable);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
     const itemsPerPage = 4;
@@ -68,6 +68,7 @@ async function index(req, res, next)
         pictures = noPswPictures;
         res.json(   { 
                         "pictures"      :   pictures,
+                        "valid_filters" :   (Object.keys(validFilters).length !== 0) ? validFilters : "none",
                         "paging_data"   :   {
                                                 "total_pictures"    :   totalPicturesAvailable,
                                                 "total_pages"       :   total_pages,

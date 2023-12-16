@@ -1,28 +1,5 @@
-
-
 [
-    { 
-        "title_includes"    :   {
-                                    "title"         :   {
-                                                            "contains"  :   "XXX"
-                                                        }   
-                                }  
-    },
-
-    { 
-        "author_id"         :   {
-                                    "userId"        :   {
-                                                            "equals"    :   "XXX"
-                                                        }    
-                                }
-    },
-
-    {   "category_id"       :   {
-                                    "categories"    :   {
-                                                            "some"      :   {
-                                                                                "id"    :   "XXX"
-                                                                            }
-                                                        }   
-                                }  
-    }
+    { "title_includes"  :   "title//contains"},
+    { "category_id"     :   "categories//some//id" },
+    { "visible"         :   "visible"} 
 ]
