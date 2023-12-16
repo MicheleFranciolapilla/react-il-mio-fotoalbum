@@ -30,7 +30,8 @@ async function index(req, res, next)
         currentPage = total_pages;
     if (currentPage < 1)
         currentPage = 1;
-    prismaQuery =   {   "where"     :   prismaQuery["where"],
+    prismaQuery =   {   
+                        "where"     :   prismaQuery["where"],
                         "skip"      :   (currentPage - 1) * itemsPerPage, 
                         "take"      :   itemsPerPage,
                         "include"   :   {
