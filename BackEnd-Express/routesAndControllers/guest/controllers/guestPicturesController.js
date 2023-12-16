@@ -6,22 +6,55 @@ const ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/
 
 async function index(req, res, next)
 {
-    let itemsPerPage = 4;
-    const currentPage = req.query.page || 1;
-    let prismaQuery =   {   "where"     :   {   "visible"       :   true },
-                            "skip"      :   (currentPage - 1) * itemsPerPage, 
-                            "take"      :   itemsPerPage,
-                            "include"   :   {
-                                                "user"          :   true,
-                                                "categories"    :   true 
-                                            } 
-                        };
+    let prismaQuery = { "where" : { "visible" : true } };
+    let totalPicturesAvailable = null;
+    try
+    {
+        totalPicturesAvailable = await prisma.Picture.count(prismaQuery);
+        console.log("VALORE: ", totalPicturesAvailable);
+        if (totalPicturesAvailable < 1)
+        {
+            console.log("PICTURES TROVATE : nessuna");
+            res.json({ "pictures" : [] });
+            return;
+        }
+    }
+    catch(error)
+    {
+        return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
+    const itemsPerPage = 4;
+    const total_pages = Math.ceil(totalPicturesAvailable / itemsPerPage);
+    let currentPage = req.query.page || 1;
+    if (currentPage > total_pages)
+        currentPage = total_pages;
+    if (currentPage < 1)
+        currentPage = 1;
+    prismaQuery =   {   "where"     :   prismaQuery["where"],
+                        "skip"      :   (currentPage - 1) * itemsPerPage, 
+                        "take"      :   itemsPerPage,
+                        "include"   :   {
+                                            "user"          :   true,
+                                            "categories"    :   true 
+                                        } 
+                    };
+    console.log("QUERY: ", prismaQuery);
+
     let pictures = [];
     try
     {
         pictures = await prisma.Picture.findMany(prismaQuery);
         console.log("PICTURES TROVATE ", pictures);
-        res.json({ "pictures" : pictures });
+        res.json(   { 
+                        "pictures"      :   pictures,
+                        "paging_data"   :   {
+                                                "total_pictures"    :   totalPicturesAvailable,
+                                                "total_pages"       :   total_pages,
+                                                "pictures_per_page" :   itemsPerPage,
+                                                "current_page"      :   currentPage
+                                            } 
+                    });
+        return;
     }
     catch(error)
     {

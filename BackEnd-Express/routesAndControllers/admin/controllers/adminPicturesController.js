@@ -32,7 +32,7 @@ async function index(req, res, next)
     // Implementare un controllo che eviti di avere un currentPage nullo o superiore al numero di pagine possibili con l'attuale itemsPerPage
     // Implementare la logica delle query filters
     const { userId } = req.body;
-    let itemsPerPage = 4;
+    const itemsPerPage = 4;
     const currentPage = req.query.page || 1;
     let prismaQuery =   {   "where"     :   {   "userId"        : parseInt(userId) },
                             "skip"      :   (currentPage - 1) * itemsPerPage, 

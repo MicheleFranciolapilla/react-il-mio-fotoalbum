@@ -36,7 +36,7 @@ async function idBySlug(slugToCheck)
 async function index(req, res, next)
 {
     // Implementare un controllo che eviti di avere un currentPage nullo o superiore al numero di pagine possibili con l'attuale itemsPerPage
-    let itemsPerPage = 5;
+    const itemsPerPage = 5;
     const currentPage = req.query.page || 1;
     let prismaQuery = { skip : (currentPage - 1) * itemsPerPage, take : itemsPerPage };
     let categories = [];
