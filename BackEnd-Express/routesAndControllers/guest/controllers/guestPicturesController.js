@@ -17,8 +17,8 @@ async function index(req, res, next)
         console.log("FILTRI ALL'ORIGINE: ", filter);
         const validFilters = avoidDuplicates(retrieveValidFilters(filter, false), true, true);
         console.log("FILTRI VALIDI: ", validFilters);
-        const thequery = buildWhereQuery(prismaQuery, validFilters, false);
-        console.log("THE QUERY IS: ",thequery);
+        prismaQuery = buildWhereQuery(prismaQuery, validFilters, false);
+        console.log("THE QUERY IS: ",prismaQuery);
     }
     let totalPicturesAvailable = null;
     try
@@ -34,6 +34,7 @@ async function index(req, res, next)
     }
     catch(error)
     {
+        console.log(totalPicturesAvailable);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
     const itemsPerPage = 4;

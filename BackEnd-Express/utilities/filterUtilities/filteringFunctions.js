@@ -48,7 +48,7 @@ function buildWhereQuery(initialWhereQuery, filtersObj, admin)
 {
     // OGGETTO IN ENTRATA E QUERY OBJECT (WHERE) IN USCITA
     const queryPattern = admin ? adminQueries : guestQueries;
-    let query = { ...initialWhereQuery };
+    let query = { ...initialWhereQuery["where"] };
     for (key in filtersObj)
     {
         const currentPattern = queryPattern.find( item => Object.keys(item).includes(key) );
@@ -61,9 +61,11 @@ function buildWhereQuery(initialWhereQuery, filtersObj, admin)
             let currentObject = { [currentObjectKey] : currentObjectValue };
             currentObjectValue = currentObject;
         }
+
         query[splittedPattern[0]] = currentObjectValue;
     }
-    return query;
+    const result = {where : query};
+    return result;
 }
 
 module.exports = { retrieveValidFilters, avoidDuplicates, buildWhereQuery };
