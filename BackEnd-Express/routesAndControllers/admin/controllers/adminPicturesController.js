@@ -158,10 +158,14 @@ async function update(req, res, next)
     const id = parseInt(req.params.id);
     // Il principio da adottare in questa update è il seguente:
     // si da la possibilità di modificare solo alcuni elementi, lasciando invariata la foto (nel qual caso la si può non ricaricare)
-    let prismaQuery = { where : { "id" : id } };
-    let { title, description, visible, userId, categories } = req.body;
-    if (!visible)
-        visible = "";
+    let prismaQuery =   {   where   :   {   
+                                            "id"    :   id 
+                                        },
+                            include :   {
+                                            "user"          :   true,
+                                            "categories"    :   true 
+                                        }
+                        };
     const { file } = req;
     let image = null;
     let imageMime = null;
@@ -177,6 +181,7 @@ async function update(req, res, next)
     try
     {
         pictureToUpdate = await prisma.Picture.findUnique(prismaQuery);
+        console.log("DATO ACQUISITO: ", pictureToUpdate);
         if (!pictureToUpdate)
         {
             console.log("ERRORE LANCIATO");
@@ -192,11 +197,14 @@ async function update(req, res, next)
             deleteFile(image, imageFolderName, splitMime(imageMime)[1]);
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
-    console.log("SI PROSEGUE, QUINDI LA PICTURE DA MODIFICARE ESISTE");
 
+    console.log("SI PROSEGUE, QUINDI LA PICTURE DA MODIFICARE ESISTE");
+    let { title, description, visible, userId, categories } = req.body;
+    if (!visible)
+        visible = "";
     let allCategoriesIds = [];
     console.log("CATEGORIES RICEVUTE IN INPUT: ", categories);
-    // Se sono state richiesti dei collegamenti con specifiche categorie, da parte del client, si verifica che esse siano effettivamente esistenti, in caso contrario le si rimuove, questo per garantire comunque il salvataggio dei dati senza incorrere in errori
+    // Se sono state richiesti dei collegamenti con specifiche categorie, da parte del client, si verifica che esse siano effettivamente esistenti, in caso contrario le si rimuove, questo per garantire comunque il salvataggio dei dati senza incorrere in errori.
     if (categories)
     {
         allCategoriesIds = await getAllCategoriesIds();
@@ -225,10 +233,12 @@ async function update(req, res, next)
                                 image       :   image ?? previousFile.image,
                                 imageMime   :   imageMime ?? previousFile.imageMime,
                                 categories  :   {
-                                                    connect :   allCategoriesIds.map( cat => ({ "id" : parseInt(cat) }) )
+                                                    disconnect  :   pictureToUpdate.categories.map( cat => ({ "id" : cat.id}) ),
+                                                    connect     :   allCategoriesIds.map( cat => ({ "id" : parseInt(cat) }) )
                                                 },
                                 userId      :   parseInt(userId)
                             };
+    console.log("CATEGORIE CONNESSE: ", pictureToUpdate.categories);
     console.log("QUERY: ", prismaQuery);
 
     try
