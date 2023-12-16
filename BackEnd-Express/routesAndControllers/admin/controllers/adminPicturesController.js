@@ -2,6 +2,7 @@ const   { PrismaClient } = require("@prisma/client");
 const   prisma = new PrismaClient();
 
 const   { splitMime, fileWithExt, deleteFile } = require("../../../utilities/filesUtilities");
+const   { removePassword } = require("../../../utilities/passwords");
 
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");

@@ -1,8 +1,10 @@
-const { PrismaClient } = require("@prisma/client");
-const prisma = new PrismaClient();
+const   { PrismaClient } = require("@prisma/client");
+const   prisma = new PrismaClient();
 
-const ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
-const ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
+const   { removePassword } = require("../../../utilities/passwords");
+
+const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
+const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
 
 async function index(req, res, next)
 {
@@ -46,6 +48,12 @@ async function index(req, res, next)
     {
         pictures = await prisma.Picture.findMany(prismaQuery);
         console.log("PICTURES TROVATE ", pictures);
+        const noPswPictures = pictures.map( item => 
+            {
+                noPswItem = removePassword(item);
+                return noPswItem;
+            });
+        pictures = noPswPictures;
         res.json(   { 
                         "pictures"      :   pictures,
                         "paging_data"   :   {
@@ -83,6 +91,7 @@ async function show(req, res, next)
         if (pictureToFind)
         {
             console.log("Picture cercata e trovata: ", pictureToFind);
+            pictureToFind = removePassword(pictureToFind);
             res.json({ picture : pictureToFind });
         }
         else

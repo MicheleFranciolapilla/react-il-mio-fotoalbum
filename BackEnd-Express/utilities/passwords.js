@@ -6,4 +6,12 @@ async function hashPassword(password, cryptSalt)
     return hash;
 }
 
-module.exports = hashPassword;
+function removePassword(Obj)
+{
+    const toBeReturned = { ...Obj };
+    if ((toBeReturned.user) && ((typeof toBeReturned.user) === "object") && (toBeReturned.user.password))
+        delete toBeReturned.user.password;
+    return toBeReturned;
+}
+
+module.exports = { hashPassword, removePassword };
