@@ -1,0 +1,31 @@
+[
+    {
+        "id"    :   1,
+        "text"  :   "Info",
+        "route" :   "/info"
+    },
+
+    {
+        "id"    :   2,
+        "text"  :   "Home",
+        "route" :   "/"
+    },
+
+    {
+        "id"    :   3,
+        "text"  :   "Collezione",
+        "route" :   "/collection"
+    },
+
+    {
+        "id"    :   4,
+        "text"  :   "Contattaci",
+        "route" :   "/message"
+    },
+
+    {
+        "id"    :   5,
+        "text"  :   "Login / Signup",
+        "route" :   "/access"
+    }
+]

@@ -1,0 +1,19 @@
+.header
+{
+    @apply fixed top-0 left-0 right-0 h-[8vh] bg-slate-700 flex items-center justify-between ps-20 pe-5;
+}
+
+.title
+{
+    @apply text-4xl text-yellow-200 italic;
+}
+
+.nav
+{
+    @apply h-[90%] px-3 py-2 border-2 border-slate-600 rounded-md flex items-center gap-9;
+}
+
+.menuItem
+{
+    @apply  text-yellow-50 hover:text-yellow-300 border-b-2 border-b-transparent;
+}
