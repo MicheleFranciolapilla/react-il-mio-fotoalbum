@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 
 import menu from "../../assets/data/menuForGuest.json";
 
-export default function CompHeader()
+export default function CompHeaderGuest()
 {
     return (
         <header className={style.header}>

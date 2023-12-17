@@ -27,14 +27,27 @@ export function ContextUserAuthenticationProvider({ children })
         storeToken(response.token);
     }
 
+    function manageUserLogOut()
+    {
+        clearToken();
+        setUserIsLogged(false);
+        setUserData(null);
+    }
+
     function storeToken(token)
     {
         setAuthToken(token);
         localStorage.setItem("token", token);
     }
 
+    function clearToken()
+    {
+        localStorage.removeItem("token");
+        setAuthToken(null);
+    }
+
     return (
-        <ContextUserAuthentication.Provider value={{ manageUserLogIn }}>
+        <ContextUserAuthentication.Provider value={{ userData, manageUserLogIn, manageUserLogOut }}>
             { children }
         </ContextUserAuthentication.Provider>
     )

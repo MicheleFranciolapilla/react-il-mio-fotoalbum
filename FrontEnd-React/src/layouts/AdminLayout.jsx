@@ -2,13 +2,13 @@ import { Outlet } from "react-router-dom";
 
 import generalStyle from "../assets/style/modules/styleForLayouts.module.css";
 
-import CompHeader from "../components/guest/CompHeader";
+import CompHeaderAdmin from "../components/admin/CompHeaderAdmin";
 
 export default function AdminLayout()
 {
     return (
         <div className={generalStyle.layout}>
-            <CompHeader/>
+            <CompHeaderAdmin/>
             <main>
                 <Outlet></Outlet>
             </main>

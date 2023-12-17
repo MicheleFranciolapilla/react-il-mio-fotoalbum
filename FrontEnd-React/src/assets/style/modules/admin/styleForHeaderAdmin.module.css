@@ -1,0 +1,24 @@
+.header
+{
+    @apply relative w-full h-[8vh] bg-slate-700 flex items-center justify-between ps-20 pe-5 z-10;
+}
+
+.title
+{
+    @apply text-4xl text-yellow-200 italic;
+}
+
+.userBox
+{
+    @apply h-[90%] px-3 py-2 border-2 border-blue-400 rounded-md flex items-center gap-20;
+}
+
+.user
+{
+    @apply text-sm text-white;
+}
+
+.menuItem
+{
+    @apply  text-yellow-50 hover:text-yellow-300 border-b-2 border-b-transparent;
+}

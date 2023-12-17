@@ -64,7 +64,10 @@ export default function PageLogInSignUp()
         const response = await logInSignUp(userToFetch, hasAccount);
         console.log(response);
         if (response.outcome)
+        {
+            resetOverlay();
             manageUserLogIn(response.data);
+        }
         else
         {
             incomingError();
