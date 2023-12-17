@@ -10,6 +10,7 @@ const   ErrorWrongPassword = require("../../../exceptionsAndMiddlewares/exceptio
 const   ErrorInvalidToken = require("../../../exceptionsAndMiddlewares/exceptions/exceptionsOnAuthentication/ErrorInvalidToken");
 
 const   { hashPassword } = require("../../../utilities/passwords");
+const   { checkTokenValidity } = require("../../../exceptionsAndMiddlewares/middlewares/allowAdminCrud");
 
 const   jwtExpiresIn = "1h";
 
@@ -96,23 +97,11 @@ async function logIn(req, res, next)
 async function verifyToken(req, res, next)
 {
     const { token } = req.body; 
-    let verified = null;
-    try
-    {
-        verified = jwt.verify(token, process.env.JWT_SECRET);
-        if (!verified)
-        {
-            console.log("TOKEN NON VALIDO (DA TRY)");
-            return next( new ErrorInvalidToken("Token non valido o scaduto.") );
-        }
-    }
-    catch(error)
-    {
-        console.log("TOKEN NON VALIDO (DA CATCH)");
+    const userVerified = checkTokenValidity(token);
+    if (!userVerified)
         return next( new ErrorInvalidToken("Token non valido o scaduto.") );
-    }
-    console.log("Token valido", verified);
-    res.json({verified});
+    console.log("Token valido", userVerified);
+    res.json({userVerified});
 }
 
 module.exports = { signUp, logIn, verifyToken };
