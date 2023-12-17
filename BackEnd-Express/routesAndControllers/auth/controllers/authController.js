@@ -7,6 +7,7 @@ const   ErrorEmailNotNew = require("../../../exceptionsAndMiddlewares/exceptions
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
 const   ErrorWrongPassword = require("../../../exceptionsAndMiddlewares/exceptions/exceptionsOnAuthentication/ErrorWrongPassword");
+const   ErrorInvalidToken = require("../../../exceptionsAndMiddlewares/exceptions/exceptionsOnAuthentication/ErrorInvalidToken");
 
 const   { hashPassword } = require("../../../utilities/passwords");
 
@@ -92,4 +93,26 @@ async function logIn(req, res, next)
     res.json({userToLog, token});
 }
 
-module.exports = { signUp, logIn };
+async function verifyToken(req, res, next)
+{
+    const { token } = req.body; 
+    let verified = null;
+    try
+    {
+        verified = jwt.verify(token, process.env.JWT_SECRET);
+        if (!verified)
+        {
+            console.log("TOKEN NON VALIDO (DA TRY)");
+            return next( new ErrorInvalidToken("Token non valido o scaduto.") );
+        }
+    }
+    catch(error)
+    {
+        console.log("TOKEN NON VALIDO (DA CATCH)");
+        return next( new ErrorInvalidToken("Token non valido o scaduto.") );
+    }
+    console.log("Token valido", verified);
+    res.json({verified});
+}
+
+module.exports = { signUp, logIn, verifyToken };
