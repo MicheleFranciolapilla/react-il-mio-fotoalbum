@@ -1,9 +1,12 @@
 const   { PrismaClient } = require("@prisma/client");
 const   prisma = new PrismaClient();
 const   jwt = require("jsonwebtoken");
+const   bcrypt = require("bcrypt");
 
 const   ErrorEmailNotNew = require("../../../exceptionsAndMiddlewares/exceptions/exceptionsOnAuthentication/ErrorEmailNotNew");
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
+const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
+const   ErrorWrongPassword = require("../../../exceptionsAndMiddlewares/exceptions/exceptionsOnAuthentication/ErrorWrongPassword");
 
 const   { hashPassword } = require("../../../utilities/passwords");
 
@@ -61,6 +64,32 @@ async function signUp(req, res, next)
 async function logIn(req, res, next)
 {
     // Aggiungere validazioni
+    const { email, password } = req.body;
+    let userToLog =  null;
+    try
+    {
+        userToLog = await prisma.User.findUnique({ "where" : { "email" : email } });
+        if (!userToLog)
+        {
+            console.log("EMAIL NON TROVATA");
+            return next( new ErrorItemNotFound("Utente non trovato") );
+        }
+    }
+    catch(error)
+    {
+        console.log("ERRORE IN LOGIN");
+        return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
+    }
+    const checkPsw = await bcrypt.compare(password, userToLog.password);
+    if (!checkPsw)
+    {
+        console.log("PASSWORD ERRATA");
+        return next( new ErrorWrongPassword("Password errata") );
+    }
+    delete userToLog.password;
+    const token = jwt.sign(userToLog, process.env.JWT_SECRET, { expiresIn: jwtExpiresIn });
+    console.log("TOKEN: ", token);
+    res.json({userToLog, token});
 }
 
 module.exports = { signUp, logIn };
