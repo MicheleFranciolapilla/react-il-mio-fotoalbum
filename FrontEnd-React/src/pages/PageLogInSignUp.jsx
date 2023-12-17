@@ -5,6 +5,7 @@ import dialogStyle from "../assets/style/modules/styleForDialogsAndErrors.module
 import { useState, useEffect } from "react";
 
 import { useContextOverlay } from "../contexts/ContextOverlay";
+import { useContextApi } from "../contexts/ContextApi";
 
 import CompInput from "../components/CompInput";
 
@@ -15,6 +16,7 @@ export default function PageLogInSignUp()
     const [newUserData, setNewUserData] = useState( {name : "", surname : "", email : "", password : ""} );
 
     const { incomingDialog, incomingError, resetOverlay } = useContextOverlay();
+    const { logInSignUp } = useContextApi();
 
     useEffect( () =>
     {
@@ -51,9 +53,14 @@ export default function PageLogInSignUp()
         }
     }
 
-    function onSubmitEvent(event)
+    async function onSubmitEvent(event)
     {
         event.preventDefault();
+        let userToFetch = newUserData;
+        if (hasAccount)
+            userToFetch = userData;
+        const response = await logInSignUp(userToFetch, hasAccount);
+        console.log(response);
     }
 
     return (

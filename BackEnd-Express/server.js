@@ -1,4 +1,5 @@
 require("dotenv").config();
+const   cors = require("cors");
 const   express = require("express");
 
 // Controllers
@@ -22,6 +23,14 @@ const   { allowAdminCrud } = require("./exceptionsAndMiddlewares/middlewares/all
 // Configurazione server
 const   port = process.env.PORT || 8080;
 const   server = express();
+
+        // Middleware relativo alle CORS Policy
+        server.use(cors(
+                {
+                        origin          :       "*",
+                        methods         :       "GET, POST, PUT, DELETE",
+                        credentials     :       true 
+                }));
 
         server.use(express.static("public"));
 

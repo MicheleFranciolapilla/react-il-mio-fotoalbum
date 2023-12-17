@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { ContextOverlayProvider } from "./contexts/ContextOverlay";
-import { ContextDataFetchProvider } from "./contexts/ContextDataFetch";
+import { ContextApiProvider } from "./contexts/ContextApi";
 import { ContextUserAuthenticationProvider } from "./contexts/ContextUserAuthentication";
 import GuestLayout from "./layouts/GuestLayout";
 import PageLogInSignUp from "./pages/PageLogInSignUp";
@@ -11,7 +11,7 @@ function App()
   return (
     <ContextOverlayProvider>
       <BrowserRouter>
-        <ContextDataFetchProvider>
+        <ContextApiProvider>
           <ContextUserAuthenticationProvider>
             <Routes>
               <Route element={<GuestLayout/>}>
@@ -20,7 +20,7 @@ function App()
               </Route>
             </Routes>
           </ContextUserAuthenticationProvider>
-        </ContextDataFetchProvider>
+        </ContextApiProvider>
       </BrowserRouter>
     </ContextOverlayProvider>
   )
