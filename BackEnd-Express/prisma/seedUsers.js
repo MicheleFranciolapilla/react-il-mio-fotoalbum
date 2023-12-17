@@ -1,6 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
-const dotenv = require("dotenv").config();
 const { hashPassword } = require("../utilities/passwords");
 
 // Per eseguire il seed, seguire i seguenti steps:

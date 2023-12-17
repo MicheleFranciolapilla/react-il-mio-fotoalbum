@@ -4,12 +4,12 @@ const   router = express.Router();
 const   multer = require("multer");
 const   thumbUploader = multer({ dest : "public/imagesForCategories" }).single("thumb");
 
-const   controller = require("../controllers/adminCategoriesController");
+const   controllers = require("../controllers/adminCategoriesController");
 
-router.get("/", controller.index);
-router.get("/:arg", controller.show);
-router.post("/", thumbUploader, controller.store);
-router.put("/:arg", thumbUploader, controller.update);
-router.delete("/:arg", controller.destroy);
+router.get("/", controllers.index);
+router.get("/:arg", controllers.show);
+router.post("/", thumbUploader, controllers.store);
+router.put("/:arg", thumbUploader, controllers.update);
+router.delete("/:arg", controllers.destroy);
 
 module.exports = router;

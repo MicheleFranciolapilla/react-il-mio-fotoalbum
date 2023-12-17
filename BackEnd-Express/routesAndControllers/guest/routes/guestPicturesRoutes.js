@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 
-const controller = require("../controllers/guestPicturesController");
+const controllers = require("../controllers/guestPicturesController");
 
-router.get("/", controller.index);
-router.get("/:id", controller.show);
+router.get("/", controllers.index);
+router.get("/:id", controllers.show);
 
 module.exports = router; 
