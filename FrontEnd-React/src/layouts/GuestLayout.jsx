@@ -9,6 +9,9 @@ export default function GuestLayout()
     return (
         <div className={generalStyle.layout}>
             <CompHeader/>
+            <main>
+                <Outlet></Outlet>
+            </main>
         </div>
     )
 } 

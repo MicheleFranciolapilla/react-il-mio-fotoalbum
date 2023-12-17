@@ -1,0 +1,30 @@
+.form
+{
+    @apply max-w-[50%] max-h-[75%] border-2 border-gray-500 bg-gray-300 mx-auto mt-[5%] flex flex-col items-center gap-4 p-2;
+}
+
+.logInSignUp
+{
+    border: 1px solid black;
+    @apply w-full h-[10%] p-2 flex items-center justify-around gap-20;
+}
+
+.radioTxt
+{
+    @apply text-xl me-3;
+}
+
+.formBody
+{
+    @apply w-full h-[70%] flex flex-col items-start gap-2 p-2 border-2 border-gray-500 bg-gray-200;
+}
+
+.formBtn
+{
+    @apply w-full h-[10%] flex items-center justify-center gap-8;
+}
+
+.btn
+{
+    @apply px-3 py-1 border-2 border-black hover:border-blue-700 bg-slate-300 hover:bg-slate-700 rounded-md text-black hover:text-yellow-200;
+} 

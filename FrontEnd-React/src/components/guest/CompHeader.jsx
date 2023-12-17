@@ -17,7 +17,7 @@ export default function CompHeader()
                             className={style.menuItem}
                             activeClassName="active"
                             to={item.route}
-                            onClick={ item.isActive ? event => event.preventDefault() : null }
+                            onClick={ item.isActive ? event => event.preventDefault() : "" }
                         >
                             {item.text}
                         </NavLink> )

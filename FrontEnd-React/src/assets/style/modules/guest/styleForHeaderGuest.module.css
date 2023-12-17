@@ -1,6 +1,6 @@
 .header
 {
-    @apply fixed top-0 left-0 right-0 h-[8vh] bg-slate-700 flex items-center justify-between ps-20 pe-5;
+    @apply relative w-full h-[8vh] bg-slate-700 flex items-center justify-between ps-20 pe-5 z-30;
 }
 
 .title
