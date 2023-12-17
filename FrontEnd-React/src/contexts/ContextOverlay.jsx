@@ -6,7 +6,7 @@ const ContextOverlay = createContext();
 
 const overlayForDialogs = 0;
 const overlayForErrors = 1;
-const overlayTWClasses = ["bg-transparent", "bg-red-400"];
+const overlayTWClasses = ["bg-transparent z-20", "bg-red-800/80 z-40"];
 
 export function ContextOverlayProvider({ children })
 {
@@ -16,13 +16,15 @@ export function ContextOverlayProvider({ children })
     function incomingDialog()
     {
         setOverlayType(overlayForDialogs);
-        setShowOverlay(true);
+        if (!showOverlay)
+            setShowOverlay(true);
     }
 
     function incomingError()
     {
         setOverlayType(overlayForErrors);
-        setShowOverlay(true);
+        if (!showOverlay)
+            setShowOverlay(true);
     }
 
     function resetOverlay()

@@ -1,4 +1,9 @@
-.accessible
+.accessibleDialog
+{
+    @apply relative z-30;
+}
+
+.accessibleError
 {
     @apply relative z-50;
 }

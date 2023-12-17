@@ -4,7 +4,9 @@ import { ContextOverlayProvider } from "./contexts/ContextOverlay";
 import { ContextApiProvider } from "./contexts/ContextApi";
 import { ContextUserAuthenticationProvider } from "./contexts/ContextUserAuthentication";
 import GuestLayout from "./layouts/GuestLayout";
-import PageLogInSignUp from "./pages/PageLogInSignUp";
+import AdminLayout from "./layouts/AdminLayout";
+import PageLogInSignUp from "./pages/guest/PageLogInSignUp";
+import PageDashboard from "./pages/admin/PageDashboard";
 
 function App() 
 {
@@ -17,6 +19,9 @@ function App()
               <Route element={<GuestLayout/>}>
                 <Route path="/">Home</Route>
                 <Route path="/access" element={<PageLogInSignUp/>}>Access</Route>
+              </Route>
+              <Route element={<AdminLayout/>}>
+                <Route path="/dashboard" element={<PageDashboard/>}>Dashboard</Route>
               </Route>
             </Routes>
           </ContextUserAuthenticationProvider>

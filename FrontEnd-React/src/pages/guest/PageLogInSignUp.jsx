@@ -1,13 +1,14 @@
-import pagesStyle from "../assets/style/modules/styleForPages.module.css";
-import userDataStyle from "../assets/style/modules/guest/styleForAccess.module.css";
-import dialogStyle from "../assets/style/modules/styleForDialogsAndErrors.module.css";
+import pagesStyle from "../../assets/style/modules/styleForPages.module.css";
+import userDataStyle from "../../assets/style/modules/guest/styleForAccess.module.css";
+import dialogStyle from "../../assets/style/modules/styleForDialogsAndErrors.module.css";
 
 import { useState, useEffect } from "react";
 
-import { useContextOverlay } from "../contexts/ContextOverlay";
-import { useContextApi } from "../contexts/ContextApi";
+import { useContextOverlay } from "../../contexts/ContextOverlay";
+import { useContextApi } from "../../contexts/ContextApi";
+import { useContextUserAuthentication } from "../../contexts/ContextUserAuthentication";
 
-import CompInput from "../components/CompInput";
+import CompInput from "../../components/CompInput";
 
 export default function PageLogInSignUp()
 {
@@ -17,6 +18,7 @@ export default function PageLogInSignUp()
 
     const { incomingDialog, incomingError, resetOverlay } = useContextOverlay();
     const { logInSignUp } = useContextApi();
+    const { manageUserLogIn } = useContextUserAuthentication();
 
     useEffect( () =>
     {
@@ -61,11 +63,17 @@ export default function PageLogInSignUp()
             userToFetch = userData;
         const response = await logInSignUp(userToFetch, hasAccount);
         console.log(response);
+        if (response.outcome)
+            manageUserLogIn(response.data);
+        else
+        {
+            incomingError();
+        }
     }
 
     return (
         <div className={ pagesStyle.page }>
-            <form className={`${userDataStyle.form} ${dialogStyle.accessible}`} onSubmit={ (event) => onSubmitEvent(event) }>
+            <form className={`${userDataStyle.form} ${dialogStyle.accessibleDialog}`} onSubmit={ (event) => onSubmitEvent(event) }>
                 <div className={userDataStyle.logInSignUp}>
                     <div>
                         <label 

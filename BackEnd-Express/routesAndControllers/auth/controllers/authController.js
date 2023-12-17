@@ -66,7 +66,6 @@ async function signUp(req, res, next)
 async function logIn(req, res, next)
 {
     // Aggiungere validazioni
-    console.log("IN LOGIN");
     const { email, password } = req.body;
     let userToLog =  null;
     try
