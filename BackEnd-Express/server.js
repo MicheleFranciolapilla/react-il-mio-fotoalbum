@@ -35,7 +35,9 @@ const   server = express();
         server.use("/pictures", routerForPicturesGuest);
 
         // Rotte private (admin)
+        // Middleware di convalida del token per l'accesso alle funzioni di admin
         server.use("/admin", allowAdminCrud);
+        // Rotte admin
         server.use("/admin/categories", routerForCategories);
         server.use("/admin/pictures", routerForPicturesAdmin);
 

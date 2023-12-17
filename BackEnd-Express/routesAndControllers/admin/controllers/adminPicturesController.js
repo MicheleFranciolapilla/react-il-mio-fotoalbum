@@ -31,7 +31,8 @@ async function getAllCategoriesIds()
 
 async function index(req, res, next)
 {
-    const { userId, filter } = req.body;
+    const { filter } = req.body;
+    const userId = req.user.id;
     console.log(filter);
     let prismaQuery = { "where" : { "userId" : parseInt(userId) } };
     let validFilters = {};
@@ -107,7 +108,7 @@ async function index(req, res, next)
 async function show(req, res, next)
 {
     const id = parseInt(req.params.id);
-    const { userId } = req.body;
+    const userId = req.user.id;
     const prismaQuery = {   "where"     :   { 
                                                 "id"            :   id,
                                                 "userId"        :   parseInt(userId)
@@ -141,7 +142,8 @@ async function store(req, res, next)
     // Validazioni su tipo ed esistenza dei dati da effettuare
     const { file } = req;
     fileWithExt(file);
-    let { title, description, visible, userId, categories } = req.body;
+    let { title, description, visible, categories } = req.body;
+    const userId = req.user.id;
     if (!visible)
         visible = "";
     let allCategoriesIds = [];
@@ -211,7 +213,8 @@ async function store(req, res, next)
 async function update(req, res, next)
 {
     const id = parseInt(req.params.id);
-    let { title, description, visible, userId, categories } = req.body;
+    let { title, description, visible, categories } = req.body;
+    const userId = req.user.id;
     if (!visible)
         visible = "";
     // Il principio da adottare in questa update è il seguente:
@@ -320,7 +323,7 @@ async function update(req, res, next)
 async function destroy(req, res, next)
 {
     const id = parseInt(req.params.id);
-    const { userId } = req.body;
+    const userId = req.user.id;
     const prismaQuery = {   "where" :   { 
                                             "id"        :   id,
                                             "userId"    :   parseInt(userId)
