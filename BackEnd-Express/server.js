@@ -17,6 +17,7 @@ const   routerForAuthentication = require("./routesAndControllers/auth/routes/au
 // Middlewares
 const   error404 = require("./exceptionsAndMiddlewares/middlewares/error404RouteNotFound");
 const   errorsManager = require("./exceptionsAndMiddlewares/middlewares/errorsManager");
+const   { allowAdminCrud } = require("./exceptionsAndMiddlewares/middlewares/allowAdminCrud");
 
 // Configurazione server
 const   port = process.env.PORT || 8080;
@@ -34,6 +35,7 @@ const   server = express();
         server.use("/pictures", routerForPicturesGuest);
 
         // Rotte private (admin)
+        server.use("/admin", allowAdminCrud);
         server.use("/admin/categories", routerForCategories);
         server.use("/admin/pictures", routerForPicturesAdmin);
 
