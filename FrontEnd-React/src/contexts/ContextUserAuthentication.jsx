@@ -9,6 +9,7 @@ const ContextUserAuthentication = createContext();
 
 export function ContextUserAuthenticationProvider({ children })
 {
+    const [go, setGo] = useState(false);
     const [userData, setUserData] = useState(null);
     const [authToken, setAuthToken] = useState(null);
     const [userIsLogged, setUserIsLogged] = useState(false);
@@ -24,13 +25,23 @@ export function ContextUserAuthenticationProvider({ children })
             resetOverlay();
             const token = localStorage.getItem("token");
             if (!token)
-                setTimeout( () => navigate("/"));
+            {
+                setTimeout( () => 
+                    {
+                        setGo(true);
+                        console.log("GO SETTATO A TRUE");
+                        navigate("/");
+                    });
+            }
             else
                 checkTokenOnLoad(token);
         }, []);
 
     useEffect( () =>
         {
+            if (!go)
+                setGo(true);
+                console.log("GO SETTATO A TRUE");
             if (userIsLogged)
                 navigate("/dashboard");
             else
@@ -48,7 +59,11 @@ export function ContextUserAuthenticationProvider({ children })
             setUserIsLogged(true);
         }
         else
+        {
+            setGo(true);
+            console.log("GO SETTATO A TRUE");
             navigate("/");
+        }
     }
 
     function manageUserLogIn(response)
@@ -92,7 +107,7 @@ export function ContextUserAuthenticationProvider({ children })
     }
 
     return (
-        <ContextUserAuthentication.Provider value={{ userData, userIsLogged, manageUserLogIn, manageUserLogOut }}>
+        <ContextUserAuthentication.Provider value={{ go, userData, userIsLogged, manageUserLogIn, manageUserLogOut }}>
             { children }
         </ContextUserAuthentication.Provider>
     )

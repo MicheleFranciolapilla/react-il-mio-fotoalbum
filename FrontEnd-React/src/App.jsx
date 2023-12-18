@@ -13,6 +13,7 @@ import PageDashboard from "./pages/admin/PageDashboard";
 
 function App() 
 {
+  // Per come è configurato il programma (rotte private accessibili soltanto a seguito di login/registrazione o mediante ricaricamento pagina, comunque gestito da apposita "useEffect") il middleware "ProtectAdminRoutes" si rivela assolutamente inutile ma non dannoso, quindi, per il momento, lo si lascia lì dov'è
   return (
     <ContextOverlayProvider>
       <BrowserRouter>

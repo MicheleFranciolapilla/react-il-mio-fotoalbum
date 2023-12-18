@@ -3,6 +3,7 @@ import userDataStyle from "../../assets/style/modules/guest/styleForAccess.modul
 import dialogStyle from "../../assets/style/modules/styleForDialogsAndErrors.module.css";
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useContextOverlay } from "../../contexts/ContextOverlay";
 import { useContextDialog } from "../../contexts/ContextDialog";
@@ -11,16 +12,19 @@ import { useContextUserAuthentication } from "../../contexts/ContextUserAuthenti
 
 import CompInput from "../../components/CompInput";
 
-export default function PageLogInSignUp()
+import { returnErrorMsg } from "../../assets/utilities/errorRelatedFunctions";
+
+export default function PageLogInSignUp() 
 {
     const [hasAccount, setHasAccount] = useState(true);
     const [userData, setUserData] = useState( {email : "", password : ""} );
     const [newUserData, setNewUserData] = useState( {name : "", surname : "", email : "", password : ""} );
 
     const { incomingDialog, incomingError, resetOverlay } = useContextOverlay();
-    const { getDefaultDialogParams, dialogOn, dialogOff, dialogForError } = useContextDialog();
+    const { getDefaultDialogParams, dialogOn, dialogForError } = useContextDialog();
     const { logInSignUp } = useContextApi();
     const { manageUserLogIn } = useContextUserAuthentication();
+    const navigate = useNavigate();
 
     useEffect( () =>
     {
@@ -57,17 +61,6 @@ export default function PageLogInSignUp()
         }
     }
 
-    function returnErrorMsg(errorResponse)
-    {
-        console.log("ERRORE ENTRANTE: ", errorResponse);
-        let errorMsgs = ["Operazione non eseguibile al momento.", "Riprovare più tardi."];
-        if (errorResponse.errorBy === "network")
-            errorMsgs = ["Rete non disponibile o instabile.", "Riprovare più tardi."];
-        else if (errorResponse.errorBy === "response")
-            errorMsgs = [`Errore (${errorResponse.status})`, errorResponse.errorMsg];
-        return errorMsgs;
-    }
-
     async function onSubmitEvent(event)
     {
         event.preventDefault();
@@ -95,6 +88,12 @@ export default function PageLogInSignUp()
                             "twoButtons"    :   false,
                         });
         }
+    }
+
+    function dismiss()
+    {
+        resetOverlay();
+        navigate(-1);
     }
 
     return (
@@ -178,7 +177,7 @@ export default function PageLogInSignUp()
                     />
                 </div>
                 <div className={userDataStyle.formBtn}>
-                    <button className={userDataStyle.btn} type="button" onClick={ () => navigate(-1) }>Annulla</button>
+                    <button className={userDataStyle.btn} type="button" onClick={ () => dismiss() }>Annulla</button>
                     <button className={userDataStyle.btn} type="submit">Conferma</button>
                 </div>
             </form>
