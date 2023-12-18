@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { useContextApi } from "./ContextApi";
+import { useContextOverlay } from "./ContextOverlay";
+
 const ContextUserAuthentication = createContext();
 
 export function ContextUserAuthenticationProvider({ children })
@@ -10,6 +13,18 @@ export function ContextUserAuthenticationProvider({ children })
     const [userIsLogged, setUserIsLogged] = useState(false);
 
     const navigate = useNavigate();
+    const { verifyToken } = useContextApi();
+    const { resetOverlay } = useContextOverlay();
+
+    useEffect( () =>
+        {
+            resetOverlay();
+            const token = localStorage.getItem("token");
+            if (!token)
+                setTimeout( () => navigate("/"));
+            else
+                checkTokenOnLoad(token);
+        }, []);
 
     useEffect( () =>
         {
@@ -18,6 +33,20 @@ export function ContextUserAuthenticationProvider({ children })
             else
                 navigate("/");
         }, [userIsLogged]);
+
+    async function checkTokenOnLoad(token)
+    {
+        const check = await verifyToken(token);
+        console.log("USER IS: ",check);
+        if (check)
+        {
+            setUserData(check);
+            setAuthToken(token);
+            setUserIsLogged(true);
+        }
+        else
+            navigate("/");
+    }
 
     function manageUserLogIn(response)
     {

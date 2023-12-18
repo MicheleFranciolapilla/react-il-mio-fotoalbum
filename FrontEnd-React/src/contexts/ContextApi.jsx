@@ -25,8 +25,22 @@ export function ContextApiProvider({ children })
         }
     }
 
+    async function verifyToken(token)
+    {
+        try
+        {
+            const response = await axiosApi.post(`/auth/verifytoken`, { token });
+            console.log("LA RESPONSE: ", response);
+            return response.data.userVerified;
+        }
+        catch(error)
+        {
+            return null;
+        }
+    }
+
     return (
-        <ContextApi.Provider value={{ logInSignUp }}>
+        <ContextApi.Provider value={{ logInSignUp, verifyToken }}>
             { children }
         </ContextApi.Provider>
     )
