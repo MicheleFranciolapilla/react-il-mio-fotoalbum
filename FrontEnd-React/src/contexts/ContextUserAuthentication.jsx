@@ -67,9 +67,9 @@ export function ContextUserAuthenticationProvider({ children })
         dialogOn(   {
                         ...errorDialogParams, 
                         "message1"          :   `Log Out per ${userData.name} ${userData.surname}`,
-                        "message2"          :   "Tempo necessario per l'operazione: 3 secondi",
+                        "message2"          :   "Tempo necessario per l'operazione: 5 secondi",
                         "timingClose"       :   true,
-                        "timerMsec"         :   10000,
+                        "timerMsec"         :   5000,
                         "functionTiming"    :   () =>
                                                     {
                                                         clearToken();
@@ -92,7 +92,7 @@ export function ContextUserAuthenticationProvider({ children })
     }
 
     return (
-        <ContextUserAuthentication.Provider value={{ userData, manageUserLogIn, manageUserLogOut }}>
+        <ContextUserAuthentication.Provider value={{ userData, userIsLogged, manageUserLogIn, manageUserLogOut }}>
             { children }
         </ContextUserAuthentication.Provider>
     )
