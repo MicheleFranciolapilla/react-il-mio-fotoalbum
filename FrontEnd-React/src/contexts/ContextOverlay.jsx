@@ -6,7 +6,8 @@ const ContextOverlay = createContext();
 
 const overlayForDialogs = 0;
 const overlayForErrors = 1;
-const overlayTWClasses = ["bg-transparent z-20", "bg-red-800/80 z-40"];
+const overlayForInfo = 2;
+const overlayTWClasses = ["bg-transparent z-20", "bg-red-800/80 z-40", "bg-transparent z-40"];
 
 export function ContextOverlayProvider({ children })
 {
@@ -27,13 +28,20 @@ export function ContextOverlayProvider({ children })
             setShowOverlay(true);
     }
 
+    function incomingInfo()
+    {
+        setOverlayType(overlayForInfo);
+        if (!showOverlay)
+            setShowOverlay(true);
+    }
+
     function resetOverlay()
     {
         setShowOverlay(false);
     }
 
     return (
-        <ContextOverlay.Provider value={{ incomingDialog, incomingError, resetOverlay }}>
+        <ContextOverlay.Provider value={{ incomingDialog, incomingError, incomingInfo, resetOverlay }}>
             {
                 showOverlay &&  <div className={`${style.overlay} ${overlayTWClasses[overlayType]}`}>
                                 </div>
