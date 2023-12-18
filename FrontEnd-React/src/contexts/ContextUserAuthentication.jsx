@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useContextApi } from "./ContextApi";
 import { useContextOverlay } from "./ContextOverlay";
+import { useContextDialog } from "./ContextDialog";
 
 const ContextUserAuthentication = createContext();
 
@@ -14,10 +15,12 @@ export function ContextUserAuthenticationProvider({ children })
 
     const navigate = useNavigate();
     const { verifyToken } = useContextApi();
-    const { resetOverlay } = useContextOverlay();
+    const { resetOverlay, incomingInfo } = useContextOverlay();
+    const { getDefaultDialogParams, dialogForInfo, dialogOn, dialogOff  } = useContextDialog();
 
     useEffect( () =>
         {
+            dialogOff();
             resetOverlay();
             const token = localStorage.getItem("token");
             if (!token)
@@ -58,9 +61,22 @@ export function ContextUserAuthenticationProvider({ children })
 
     function manageUserLogOut()
     {
-        clearToken();
-        setUserIsLogged(false);
-        setUserData(null);
+        incomingInfo();
+        dialogForInfo();
+        const errorDialogParams = getDefaultDialogParams();
+        dialogOn(   {
+                        ...errorDialogParams, 
+                        "message1"          :   `Log Out per ${userData.name} ${userData.surname}`,
+                        "message2"          :   "Tempo necessario per l'operazione: 3 secondi",
+                        "timingClose"       :   true,
+                        "timerMsec"         :   10000,
+                        "functionTiming"    :   () =>
+                                                    {
+                                                        clearToken();
+                                                        setUserIsLogged(false);
+                                                        setUserData(null);
+                                                    }
+                    });
     }
 
     function storeToken(token)

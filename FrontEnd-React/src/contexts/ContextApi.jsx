@@ -16,8 +16,9 @@ export function ContextApiProvider({ children })
         }
         catch(error)
         {
+            console.log("DETTAGLIO DELL'ERRORE:", error);
             if (error.response)
-                return { outcome : false, errorBy : "response", error : error.response.data };
+                return { outcome : false, errorBy : "response", status : error.response.status, errorMsg : error.response.data.message };
             else if (error.request)
                 return { outcome : false, errorBy : "network" };
             else

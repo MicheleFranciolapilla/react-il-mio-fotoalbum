@@ -5,6 +5,7 @@ import dialogStyle from "../../assets/style/modules/styleForDialogsAndErrors.mod
 import { useState, useEffect } from "react";
 
 import { useContextOverlay } from "../../contexts/ContextOverlay";
+import { useContextDialog } from "../../contexts/ContextDialog";
 import { useContextApi } from "../../contexts/ContextApi";
 import { useContextUserAuthentication } from "../../contexts/ContextUserAuthentication";
 
@@ -17,6 +18,7 @@ export default function PageLogInSignUp()
     const [newUserData, setNewUserData] = useState( {name : "", surname : "", email : "", password : ""} );
 
     const { incomingDialog, incomingError, resetOverlay } = useContextOverlay();
+    const { getDefaultDialogParams, dialogOn, dialogOff, dialogForError } = useContextDialog();
     const { logInSignUp } = useContextApi();
     const { manageUserLogIn } = useContextUserAuthentication();
 
@@ -55,6 +57,17 @@ export default function PageLogInSignUp()
         }
     }
 
+    function returnErrorMsg(errorResponse)
+    {
+        console.log("ERRORE ENTRANTE: ", errorResponse);
+        let errorMsgs = ["Operazione non eseguibile al momento.", "Riprovare più tardi."];
+        if (errorResponse.errorBy === "network")
+            errorMsgs = ["Rete non disponibile o instabile.", "Riprovare più tardi."];
+        else if (errorResponse.errorBy === "response")
+            errorMsgs = [`Errore (${errorResponse.status})`, errorResponse.errorMsg];
+        return errorMsgs;
+    }
+
     async function onSubmitEvent(event)
     {
         event.preventDefault();
@@ -70,7 +83,17 @@ export default function PageLogInSignUp()
         }
         else
         {
+            const errorMsgs = returnErrorMsg(response);
             incomingError();
+            dialogForError();
+            const errorDialogParams = getDefaultDialogParams();
+            dialogOn(   {
+                            ...errorDialogParams, 
+                            "title"         :   "ERRORE", 
+                            "message1"      :   errorMsgs[0],
+                            "message2"      :   errorMsgs[1],
+                            "twoButtons"    :   false,
+                        });
         }
     }
 
