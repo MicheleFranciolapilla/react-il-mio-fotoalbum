@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
 
-import { useContextApi } from "../../contexts/ContextApi";
-import { useContextOverlay } from "../../contexts/ContextOverlay";
-import { useContextDialog } from "../../contexts/ContextDialog";
+import { useContextApi } from "../contexts/ContextApi";
+import { useContextOverlay } from "../contexts/ContextOverlay";
+import { useContextDialog } from "../contexts/ContextDialog";
+import { useContextUserAuthentication } from "../contexts/ContextUserAuthentication";
 
-import pagesStyle from "../../assets/style/modules/styleForPages.module.css";
+import pagesStyle from "../assets/style/modules/styleForPages.module.css";
 
-import { returnErrorMsg } from "../../assets/utilities/errorRelatedFunctions";
+import { returnErrorMsg } from "../assets/utilities/errorRelatedFunctions";
 
-export default function PageCollectionGuest()
+export default function PageCollection()
 {
     const [pagingData, setPagingData] = useState({current_page : 1});
     const [validFilters, setValidFilters] = useState(null);
@@ -17,6 +18,7 @@ export default function PageCollectionGuest()
     const { getPictures } = useContextApi();
     const { incomingError, resetOverlay } = useContextOverlay();
     const { getDefaultDialogParams, dialogOn, dialogForError } = useContextDialog();
+    const { userIsLogged } = useContextUserAuthentication();
 
     useEffect( () =>
         {
@@ -53,7 +55,6 @@ export default function PageCollectionGuest()
 
     return (
         <div className={ pagesStyle.page }>
-
         </div>
     )
 }
