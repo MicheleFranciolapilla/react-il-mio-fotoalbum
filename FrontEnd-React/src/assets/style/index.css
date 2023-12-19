@@ -11,3 +11,18 @@ body
 {
     @apply border-b-2 border-b-blue-400 text-blue-400 hover:text-blue-400 cursor-default;
 }
+
+#collectionVerticalNav
+{
+    @apply h-full w-[7%] border-2 border-green-700;
+}
+
+#collectionInfoAndControls
+{
+    @apply h-full w-[23%] border-2 border-blue-600;
+}
+
+#collectionSlider
+{
+    @apply h-full w-[70%] border-2 border-yellow-400;
+}

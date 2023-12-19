@@ -12,6 +12,9 @@ const   routerForPicturesGuest = require("./routesAndControllers/guest/routes/gu
 const   routerForCategories = require("./routesAndControllers/admin/routes/adminCategoriesRoutes");
 const   routerForPicturesAdmin = require("./routesAndControllers/admin/routes/adminPicturesRoutes");
 
+// Routers per rotte miste (pubbliche / private)
+const   routerForUsers = require("./routesAndControllers/users/routes/guestUsersRoutes");
+
 // Routers per rotte di autenticazione
 const   routerForAuthentication = require("./routesAndControllers/auth/routes/authRoutes");
 
@@ -49,6 +52,9 @@ const   server = express();
         // Rotte admin
         server.use("/admin/categories", routerForCategories);
         server.use("/admin/pictures", routerForPicturesAdmin);
+
+        //Rotte miste (pubbliche / private)
+        server.use("/users", routerForUsers);
 
         // Rotte di autenticazione
         server.use("/auth", routerForAuthentication);

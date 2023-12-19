@@ -68,7 +68,14 @@ export default function PageCollection()
                                     {
                                         (collection.length === 0)   ?   <h2 className={ style.noDataMessage }>Nessuna foto disponibile</h2>
                                                                     :   <>
-                                                                            
+                                                                            {
+                                                                                (userIsLogged)  &&  <div id="collectionVeticalNav">
+                                                                                                    </div>
+                                                                            }
+                                                                            <div id="collectionInfoAndControls">
+                                                                            </div>
+                                                                            <div id="collectionSlider">
+                                                                            </div>
                                                                         </>
                                     }
                                 </>

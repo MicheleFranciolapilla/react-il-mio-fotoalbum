@@ -11,6 +11,7 @@ async function seedInitialUsers()
     const userParts = process.env.USER_FOR_SEEDING.split(" ");
     const userName = userParts[0];
     const userSurname = userParts[1];
+    const userRole = process.env.ROLE_FOR_SEEDING;
     const userEmail = process.env.MAIL_FOR_SEEDING;
     const userPsw = await hashPassword(process.env.PSW_FOR_SEEDING, 10);
     const michele = await prisma.user.upsert(
@@ -20,20 +21,21 @@ async function seedInitialUsers()
             "create"  :   {
                             "name"      : userName,
                             "surname"   : userSurname,
+                            "role"      : userRole,
                             "email"     : userEmail,
                             "password"  : userPsw
                           }
         });
-    const fakeUserPsw = await hashPassword("fake-password", 10);
-    const fakeUser = await prisma.user.upsert(
+    const GachoPsw = await hashPassword("gachagacho", 10);
+    const Gacho = await prisma.user.upsert(
         {
-            "where"   :   { "email"     : "fake@email.com" },
+            "where"   :   { "email"     : "ignaciodava@gmail.com" },
             "update"  :   {},
             "create"  :   {
-                            "name"      : "fake name",
-                            "surname"   : "fake surname",
-                            "email"     : "fake@email.com",
-                            "password"  : fakeUserPsw
+                            "name"      : "Ignacio Joshua",
+                            "surname"   : "Davalos Sosa",
+                            "email"     : "ignaciodava@gmail.com",
+                            "password"  : GachoPsw
                           }
         });
 }

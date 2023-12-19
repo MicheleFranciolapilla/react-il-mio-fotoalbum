@@ -15,7 +15,7 @@ export default function CompHeaderAdmin()
             <h1 className={style.title}>PhotoLand</h1>
             <div className={style.userBox}>
                 {
-                    (userData) && <h2 className={style.user}>{userData.name} {userData.surname}</h2>
+                    (userData) && <h2 className={`${style.user} ${userData.role === "Super Admin" && style.super}`}>{userData.name} {userData.surname}</h2>
                 }
                 <button className={style.menuItem} type="button" onClick={ manageUserLogOut } >
                     Log Out
