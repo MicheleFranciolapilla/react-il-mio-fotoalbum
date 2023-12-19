@@ -7,6 +7,8 @@ const   { retrieveValidFilters, avoidDuplicates, buildWhereQuery } = require("..
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
 
+let     itemsPerPage = 4;
+
 async function index(req, res, next)
 {
     const { filter } = req.body;
@@ -37,7 +39,10 @@ async function index(req, res, next)
     {
         return next( new ErrorFromDB("Operazione non eseguibile al momento.") );
     }
-    const itemsPerPage = 4;
+    // Si consente al front end di decidere il numero di elementi per pagina. Validare questo input di modo che sia di tipo valido e tale che (0 < numero <= 10)
+    const { itemsxpage } = req.query || null;
+    if (itemsxpage)
+        itemsPerPage = parseInt(itemsxpage);
     const total_pages = Math.ceil(totalPicturesAvailable / itemsPerPage);
     let currentPage = req.query.page || 1;
     if (currentPage > total_pages)
