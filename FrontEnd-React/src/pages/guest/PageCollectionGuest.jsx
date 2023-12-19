@@ -15,7 +15,7 @@ export default function PageCollectionGuest()
     const [collection, setCollection] = useState([]);
 
     const { getPictures } = useContextApi();
-    const { incomingError } = useContextOverlay();
+    const { incomingError, resetOverlay } = useContextOverlay();
     const { getDefaultDialogParams, dialogOn, dialogForError } = useContextDialog();
 
     useEffect( () =>
@@ -26,7 +26,6 @@ export default function PageCollectionGuest()
     async function makeApiCall()
     {
         const response = await getPictures(pagingData.current_page, false);
-        // console.log("DATI: ", response.data.pictures);
         if (response.outcome)
         {
             if (collection.length !== 0)

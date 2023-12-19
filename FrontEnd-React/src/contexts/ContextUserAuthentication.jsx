@@ -16,13 +16,13 @@ export function ContextUserAuthenticationProvider({ children })
 
     const navigate = useNavigate();
     const { verifyToken } = useContextApi();
-    const { resetOverlay, incomingInfo } = useContextOverlay();
+    const { incomingInfo, resetOverlay } = useContextOverlay();
     const { getDefaultDialogParams, dialogForInfo, dialogOn, dialogOff  } = useContextDialog();
 
     useEffect( () =>
         {
-            dialogOff();
             resetOverlay();
+            dialogOff();
             const token = localStorage.getItem("token");
             if (!token)
             {
