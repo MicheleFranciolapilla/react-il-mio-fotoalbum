@@ -34,7 +34,11 @@ export function ContextUserAuthenticationProvider({ children })
                     });
             }
             else
+            {
+                // Se il token è presente, prima di effettuare la chiamata API di verifica dello stesso lo si rimuove dal local storage per evitare conflitti con l'axios interceptor. In caso di validità lo si riposiziona nel local storage in un momento seguente.
+                localStorage.removeItem("token");
                 checkTokenOnLoad(token);
+            }
         }, []);
 
     useEffect( () =>
@@ -52,10 +56,10 @@ export function ContextUserAuthenticationProvider({ children })
     {
         const check = await verifyToken(token);
         console.log("USER IS: ",check);
-        if (check)
+        if (check.outcome)
         {
-            setUserData(check);
-            setAuthToken(token);
+            setUserData(check.data.userVerified);
+            storeToken(token);
             setUserIsLogged(true);
         }
         else
