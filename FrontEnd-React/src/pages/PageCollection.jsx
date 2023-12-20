@@ -15,10 +15,13 @@ export default function PageCollection()
 {
     const [collectionData, setCollectionData] = useState(   {
                                                                 "collection"    :   null,
-                                                                "pagingData"    :   { current_page : 1 },
+                                                                "pagingData"    :   { 
+                                                                                        "current_page"      :   1,
+                                                                                        "pictures_per_page" :   4
+                                                                                    },                                                                
                                                                 "validFilters"  :   null
                                                             });
-    const [updateTo, setUpdateTo] = useState(null);
+    const [anyQuery, setAnyQuery] = useState(null);
 
     const { getPictures } = useContextApi();
     const { incomingError, resetOverlay } = useContextOverlay();
@@ -28,19 +31,31 @@ export default function PageCollection()
 
     useEffect( () =>
         {
+            makeApiCall();
+        }, []);
+
+    useEffect( () =>
+        {
+            if (anyQuery)
+            {
                 console.log("VALORE ATTUALE: ", collectionData.pagingData);
                 makeApiCall();
-        }, [needToUpdate]);
+            }
+        }, [anyQuery]);
 
     async function makeApiCall()
     {
         // EFFETTUARE CONTROLLI SULLA PERSISTENZA DEGLI STATES AL CAMBIO DEL VALORE DI USERISLOGGED
-        const response = await getPictures(collectionData.pagingData.current_page, userIsLogged);
+
+        const response = await getPictures(userIsLogged, anyQuery);
         if (response.outcome)
         {
             let newCollectionData = {
                                         "collection"        :   response.data.pictures,
-                                        "pagingData"        :   response.data.paging_data ?? { "current_page" : 1 },
+                                        "pagingData"        :   response.data.paging_data ??    { 
+                                                                                                    "current_page"      :   1,
+                                                                                                    "pictures_per_page" :   4
+                                                                                                },
                                         "validFilters"      :   response.data.valid_filters ?? null
                                     };
             setCollectionData(newCollectionData);
@@ -64,38 +79,33 @@ export default function PageCollection()
 
     function changeData(what, how)
     {
-        const previousCollectionData = { ...collectionData };
-        let updatedPagingData = { ...previousCollectionData.pagingData };
-        let currentData = null;
-        let keyToSet = null;
+        let CP = collectionData.pagingData.current_page;
+        let PPP = collectionData.pagingData.pictures_per_page;
         switch (what)
         {
             case "PPP"  :   switch (how)
                             {
-                                case "--"   :   currentData = 3;
+                                case "--"   :   PPP = 3;
                                                 break;
-                                case "-"    :   currentData = updatedPagingData.pictures_per_page - 1;
+                                case "-"    :   PPP--;
                                                 break;
-                                case "+"    :   currentData = updatedPagingData.pictures_per_page + 1;
+                                case "+"    :   PPP++;
                                                 break;
-                                default     :   currentData = 10;
+                                default     :   PPP = 10;
                             }
-                            keyToSet = "pictures_per_page";
                             break;
             default     :   switch (how)
                             {
-                                case "--"   :   currentData = 1;
+                                case "--"   :   CP = 1;
                                                 break;
-                                case "-"    :   currentData = updatedPagingData.current_page - 1;
+                                case "-"    :   CP--;
                                                 break;
-                                case "+"    :   currentData = updatedPagingData.current_page + 1;
+                                case "+"    :   CP++;
                                                 break;
-                                default     :   currentData = updatedPagingData.total_pages;
+                                default     :   CP = collectionData.pagingData.total_pages;
                             }
-                            keyToSet = "current_page";
         }
-        updatedPagingData[keyToSet] = currentData;
-        setCollectionData( previousCollectionData => ({...previousCollectionData, pagingData : updatedPagingData}) )
+        setAnyQuery(`?page=${CP}&itemsxpage=${PPP}`);
     }
 
     return (

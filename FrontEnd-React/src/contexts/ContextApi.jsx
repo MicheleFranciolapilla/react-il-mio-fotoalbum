@@ -5,11 +5,11 @@ const ContextApi = createContext();
 
 export function ContextApiProvider({ children })
 {
-    async function getPictures(page, forAdmin)
+    async function getPictures(forAdmin, queryString = null)
     {
         const endPoint = forAdmin ? "/admin/pictures" : "pictures";
-        // Implementare anche per query filters
-            const response = await axiosApi.get(endPoint);
+        const queries = queryString ?? "";
+            const response = await axiosApi.get(endPoint + queries);
             return response;
     }
 
