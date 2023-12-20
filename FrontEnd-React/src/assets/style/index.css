@@ -17,12 +17,22 @@ body
     @apply h-full w-[7%] border-2 border-green-700;
 }
 
-#collectionInfoAndControls
+#collectionFiltersAndControls
 {
-    @apply h-full w-[23%] border-2 border-blue-600;
+    @apply h-full w-[13%] px-3 flex flex-col justify-start gap-5;
+}
+
+#controls
+{
+    @apply h-[60%] w-full flex flex-col items-center justify-start gap-3;
+}
+
+#controls > div
+{
+    @apply w-[95%] bg-stone-200 border-stone-300 p-2 border-2 rounded-md;
 }
 
 #collectionSlider
 {
-    @apply h-full w-[70%] border-2 border-yellow-400;
+    @apply h-full w-[80%] border-2 border-yellow-400;
 }

@@ -16,6 +16,7 @@ export default function PageCollection()
     const [pagingData, setPagingData] = useState({current_page : 1});
     const [validFilters, setValidFilters] = useState(null);
     const [collection, setCollection] = useState(null);
+    const [isUpdating, setIsUpdating] = useState(false);
 
     const { getPictures } = useContextApi();
     const { incomingError, resetOverlay } = useContextOverlay();
@@ -25,8 +26,15 @@ export default function PageCollection()
 
     useEffect( () =>
         {
-            makeApiCall();
-        }, [pagingData.current_page]);
+            if (!isUpdating)
+            {
+                setIsUpdating(true);
+                console.log("VALORE ATTUALE: ", pagingData);
+                makeApiCall();
+            }
+            else
+                setIsUpdating(false); 
+        }, [pagingData.current_page, pagingData.pictures_per_page]);
 
     async function makeApiCall()
     {
@@ -61,6 +69,40 @@ export default function PageCollection()
         }
     }
 
+    function changeData(what, how)
+    {
+        let previousPagingData = { ...pagingData };
+        let currentData = null;
+        let keyToSet = null;
+        switch (what)
+        {
+            case "PPP"  :   switch (how)
+                            {
+                                case "--"   :   currentData = 3;
+                                                break;
+                                case "-"    :   currentData = previousPagingData.pictures_per_page - 1;
+                                                break;
+                                case "+"    :   currentData = previousPagingData.pictures_per_page + 1;
+                                                break;
+                                default     :   currentData = 10;
+                            }
+                            keyToSet = "pictures_per_page";
+                            break;
+            default     :   switch (how)
+                            {
+                                case "--"   :   currentData = 1;
+                                                break;
+                                case "-"    :   currentData = previousPagingData.current_page - 1;
+                                                break;
+                                case "+"    :   currentData = previousPagingData.current_page + 1;
+                                                break;
+                                default     :   currentData = previousPagingData.total_pages;
+                            }
+                            keyToSet = "current_page";
+        }
+        setPagingData( previousPagingData =>  ({...previousPagingData, [keyToSet] : currentData}));
+    }
+
     return (
         <div className={`${pagesStyle.page} flex justify-center items-center`}>
             {
@@ -72,7 +114,124 @@ export default function PageCollection()
                                                                                 (userIsLogged)  &&  <div id="collectionVeticalNav">
                                                                                                     </div>
                                                                             }
-                                                                            <div id="collectionInfoAndControls">
+                                                                            <div id="collectionFiltersAndControls">
+                                                                                <div id="controls">
+                                                                                    <div className={style.info}>
+                                                                                        <h3>Totale foto:</h3>
+                                                                                        <span>{collection.length}</span>
+                                                                                    </div>
+                                                                                    <div className={style.info}>
+                                                                                        <h3>Totale pagine:</h3>
+                                                                                        <span>{pagingData.total_pages}</span>
+                                                                                    </div>
+                                                                                    <div className={style.control}>
+                                                                                        <div className={style.info}>
+                                                                                            <h3>Foto per pagina:</h3>
+                                                                                            <span>{pagingData.pictures_per_page}</span>
+                                                                                        </div>
+                                                                                        <div className={style.controlsGroup}>
+                                                                                            <button 
+                                                                                                disabled={pagingData.pictures_per_page === 3}
+                                                                                                className=  {
+                                                                                                                pagingData.pictures_per_page === 3
+                                                                                                                    ?   style.controlBtnDisabled 
+                                                                                                                    :   style.controlBtn
+                                                                                                            }
+                                                                                                onClick={ () => changeData("PPP", "--") }
+                                                                                            >
+                                                                                                <i class="fa-solid fa-backward-fast"></i>
+                                                                                            </button>
+                                                                                            <button
+                                                                                                disabled={pagingData.pictures_per_page === 3}
+                                                                                                className=  {
+                                                                                                                pagingData.pictures_per_page === 3
+                                                                                                                    ?   style.controlBtnDisabled 
+                                                                                                                    :   style.controlBtn
+                                                                                                            }
+                                                                                                onClick={ () => changeData("PPP", "-") }
+                                                                                             >
+                                                                                                <i class="fa-solid fa-caret-left"></i>
+                                                                                            </button>
+                                                                                            <button
+                                                                                                disabled={pagingData.pictures_per_page === 10}
+                                                                                                className=  {
+                                                                                                                pagingData.pictures_per_page === 10
+                                                                                                                    ?   style.controlBtnDisabled 
+                                                                                                                    :   style.controlBtn
+                                                                                                            }
+                                                                                                onClick={ () => changeData("PPP", "+") }
+                                                                                             >
+                                                                                                <i class="fa-solid fa-caret-right"></i>
+                                                                                            </button>
+                                                                                            <button
+                                                                                                disabled={pagingData.pictures_per_page === 10}
+                                                                                                className=  {
+                                                                                                                pagingData.pictures_per_page === 10
+                                                                                                                    ?   style.controlBtnDisabled 
+                                                                                                                    :   style.controlBtn
+                                                                                                            }
+                                                                                                onClick={ () => changeData("PPP", "++") }
+                                                                                             >
+                                                                                                <i class="fa-solid fa-forward-fast"></i>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className={style.control}>
+                                                                                        <div className={style.info}>
+                                                                                            <h3>Pagina corrente:</h3>
+                                                                                            <span>{pagingData.current_page}</span>
+                                                                                        </div>
+                                                                                        <div className={style.controlsGroup}>
+                                                                                            <button
+                                                                                                disabled={pagingData.current_page === 1}
+                                                                                                className=  {
+                                                                                                                pagingData.current_page === 1
+                                                                                                                    ?   style.controlBtnDisabled 
+                                                                                                                    :   style.controlBtn
+                                                                                                            }
+                                                                                                onClick={ () => changeData("CP", "--") }
+                                                                                             >
+                                                                                                <i class="fa-solid fa-backward-fast"></i>
+                                                                                            </button>
+                                                                                            <button
+                                                                                                disabled={pagingData.current_page === 1}
+                                                                                                className=  {
+                                                                                                                pagingData.current_page === 1
+                                                                                                                    ?   style.controlBtnDisabled 
+                                                                                                                    :   style.controlBtn
+                                                                                                            }
+                                                                                                onClick={ () => changeData("CP", "-") }
+                                                                                             >
+                                                                                                <i class="fa-solid fa-caret-left"></i>
+                                                                                            </button>
+                                                                                            <button
+                                                                                                disabled={pagingData.current_page === pagingData.total_pages}
+                                                                                                className=  {
+                                                                                                                pagingData.current_page === pagingData.total_pages
+                                                                                                                    ?   style.controlBtnDisabled 
+                                                                                                                    :   style.controlBtn
+                                                                                                            }
+                                                                                                onClick={ () => changeData("CP", "+") }
+                                                                                             >
+                                                                                                <i class="fa-solid fa-caret-right"></i>
+                                                                                            </button>
+                                                                                            <button
+                                                                                                disabled={pagingData.current_page === pagingData.total_pages}
+                                                                                                className=  {
+                                                                                                                pagingData.current_page === pagingData.total_pages
+                                                                                                                    ?   style.controlBtnDisabled 
+                                                                                                                    :   style.controlBtn
+                                                                                                            }
+                                                                                                onClick={ () => changeData("CP", "++") }
+                                                                                             >
+                                                                                                <i class="fa-solid fa-forward-fast"></i>
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                                <div id="filters">
+
+                                                                                </div>
                                                                             </div>
                                                                             <div id="collectionSlider">
                                                                             </div>

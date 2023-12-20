@@ -2,3 +2,28 @@
 {
     @apply text-3xl text-slate-950;
 }
+
+.info
+{
+    @apply w-full flex justify-between items-center;
+}
+
+.control
+{
+    @apply w-full flex flex-col justify-between items-start gap-2
+}
+
+.controlsGroup
+{
+    @apply w-full flex justify-between items-center;
+}
+
+.controlBtn
+{
+    @apply p-1 h-full aspect-square border-2 border-black hover:border-blue-700 bg-stone-400 hover:bg-white text-black hover:text-blue-700 rounded-md text-sm;
+}
+
+.controlBtnDisabled
+{
+    @apply  p-1 h-full aspect-square border-2 border-black/20 bg-stone-400/20 text-black/20 rounded-md text-sm;
+}
