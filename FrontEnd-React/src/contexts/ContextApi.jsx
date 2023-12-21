@@ -5,6 +5,13 @@ const ContextApi = createContext();
 
 export function ContextApiProvider({ children })
 {
+    async function getAllowedFilters(forAdmin)
+    {
+        const endPoint = forAdmin ? "/admin/pictures/allowed_filters" : "pictures/allowed_filters";
+            const response = await axiosApi.get(endPoint);
+            return response;
+    }
+
     async function getPictures(forAdmin, queryString = null)
     {
         const endPoint = forAdmin ? "/admin/pictures" : "pictures";
@@ -29,7 +36,7 @@ export function ContextApiProvider({ children })
     }
 
     return (
-        <ContextApi.Provider value={{ logInSignUp, verifyToken, getPictures }}>
+        <ContextApi.Provider value={{ logInSignUp, verifyToken, getPictures, getAllowedFilters }}>
             { children }
         </ContextApi.Provider>
     )

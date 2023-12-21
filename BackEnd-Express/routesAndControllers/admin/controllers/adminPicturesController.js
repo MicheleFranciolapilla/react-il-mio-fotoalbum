@@ -32,7 +32,7 @@ async function getAllCategoriesIds()
 
 async function index(req, res, next)
 {
-    const { filter } = req.body;
+    const { filter } = req.query || null;
     const userId = req.user.id;
     console.log(filter);
     let prismaQuery = { "where" : { "userId" : parseInt(userId) } };

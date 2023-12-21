@@ -4,6 +4,8 @@ const   prisma = new PrismaClient();
 const   { removePassword } = require("../../../utilities/passwords");
 const   { retrieveValidFilters, avoidDuplicates, buildWhereQuery } = require("../../../utilities/filterUtilities/filteringFunctions");
 
+const   filtersForGuest = require("../../../utilities/filterUtilities/allowedFilters/guestFilters.json");
+
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
 
@@ -11,7 +13,7 @@ let     itemsPerPage = 4;
 
 async function index(req, res, next)
 {
-    const { filter } = req.body;
+    const { filter } = req.query || null;
     console.log(filter);
     let prismaQuery = { "where" : { "visible" : true } };
     let validFilters = {};
@@ -121,4 +123,9 @@ async function show(req, res, next)
     }
 }
 
-module.exports = { index, show } 
+function getAllowedFilters(req, res)
+{
+    res.json({ filtersForGuest });
+}
+
+module.exports = { index, show, getAllowedFilters } 

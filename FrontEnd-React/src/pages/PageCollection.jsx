@@ -23,15 +23,17 @@ export default function PageCollection()
                                                             });
     const [anyQuery, setAnyQuery] = useState(null);
 
-    const { getPictures } = useContextApi();
+    const { getPictures, getAllowedFilters } = useContextApi();
     const { incomingError, resetOverlay } = useContextOverlay();
     const { getDefaultDialogParams, dialogOn, dialogForError } = useContextDialog();
     const { userIsLogged } = useContextUserAuthentication();
     const navigate = useNavigate();
 
+    let allowedFilters = [];
+
     useEffect( () =>
         {
-            makeApiCall();
+            makeApiCall(true);
         }, []);
 
     useEffect( () =>
@@ -39,13 +41,19 @@ export default function PageCollection()
             if (anyQuery)
             {
                 console.log("VALORE ATTUALE: ", collectionData.pagingData);
-                makeApiCall();
+                makeApiCall(false);
             }
         }, [anyQuery]);
 
-    async function makeApiCall()
+    async function makeApiCall(firstCall)
     {
         // EFFETTUARE CONTROLLI SULLA PERSISTENZA DEGLI STATES AL CAMBIO DEL VALORE DI USERISLOGGED
+
+        if (firstCall)
+        {
+            const allowedFiltersResponse = await getAllowedFilters(userIsLogged);
+            allowedFilters = allowedFiltersResponse.data;
+        }
 
         const response = await getPictures(userIsLogged, anyQuery);
         if (response.outcome)
@@ -77,6 +85,15 @@ export default function PageCollection()
         }
     }
 
+    function setFiltersQuery()
+    {
+        let queryToReturn = "";
+        if (collectionData.validFilters)
+            for (key in collectionData.validFilters)
+                queryToReturn += "&filter[".concat(key, "]=", collectionData.validFilters[key]);
+        return queryToReturn;
+    }
+
     function changeData(what, how)
     {
         let CP = collectionData.pagingData.current_page;
@@ -94,7 +111,7 @@ export default function PageCollection()
                                 default     :   PPP = 10;
                             }
                             break;
-            default     :   switch (how)
+            case "CP"   :   switch (how)
                             {
                                 case "--"   :   CP = 1;
                                                 break;
@@ -104,8 +121,12 @@ export default function PageCollection()
                                                 break;
                                 default     :   CP = collectionData.pagingData.total_pages;
                             }
+                            break;
+            // Il caso default è relativo alla modifica dei filtri di ricerca
+            default     :   CP = 1;
         }
-        setAnyQuery(`?page=${CP}&itemsxpage=${PPP}`);
+        const filtersQuery = (what === "filters") ? how : setFiltersQuery();
+        setAnyQuery(`?page=${CP}&itemsxpage=${PPP}${filtersQuery}`);
     }
 
     return (
