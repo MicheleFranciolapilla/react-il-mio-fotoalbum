@@ -8,10 +8,67 @@ import { useNavigate } from "react-router-dom";
 
 import pagesStyle from "../assets/style/modules/styleForPages.module.css";
 import style from "../assets/style/modules/styleForCollectionPage.module.css";
+import dialogStyle from "../assets/style/modules/styleForFiltersEditing.module.css";
 
 import { returnErrorMsg } from "../assets/utilities/errorRelatedFunctions";
 
 let allowedFilters = [];
+
+function filterItalianName(filterEnglishName)
+{
+    switch (filterEnglishName)
+    {
+        case "title_includes"   :   return "Titolo";
+        case "author_id"        :   return "Autore";
+        case "category_id"      :   return "Categoria";
+        case "visible"          :   return "Foto pubblica";
+    }
+}
+
+// Nel caso di aggiunta di un nuovo filtro, addFilter sarà true e filtersArrayOrFilterObj sarà un array con uno o più filtri (oggetti)
+// Nel caso di modifica di un filtro già valido, addFilter è false e filtersArrayOrFilterObj è un oggetto con una sola chiave ed è l'oggetto da modificare
+function CompFiltersEditing(props)
+{
+    const { addFilter, filtersArrayOrFilterObj } = props;
+
+    console.log("VALORE BOOLEANO: ", addFilter);
+    console.log("FILTERS: ", filtersArrayOrFilterObj);
+
+    const [selectedFilter, setSelectedFilter] = useState(null);
+
+    function clickOnFilter(index, filterObj)
+    {
+        setSelectedFilter(index);
+    }
+
+    function keepFilterHighlighted(index)
+    {
+        return (selectedFilter == index) ? "border-2 border-blue-400 text-blue-400 px-2 hover:no-underline" : "";
+    }
+
+    return (
+        <div className={dialogStyle.dialogView}>
+            {
+                addFilter &&    <div className={dialogStyle.filterSelectionBox}>
+                                    <h2 className={dialogStyle.selectionBoxTitle}>Selezionare il filtro</h2>
+                                    <ul className={dialogStyle.filtersList}>
+                                        {
+                                            filtersArrayOrFilterObj.map( (filterObj, index) => 
+                                                <li key={`Filter-Select-${index}`}>
+                                                    <button 
+                                                        className={`${dialogStyle.filterName} ${keepFilterHighlighted(index)}`}
+                                                        onClick={ () => clickOnFilter(index, filterObj) }
+                                                    >
+                                                        { filterItalianName(Object.keys(filterObj)[0]) }
+                                                    </button>
+                                                </li>)
+                                        }
+                                    </ul>
+                                </div>
+            }
+        </div>
+    )
+}
 
 export default function PageCollection()
 {
@@ -24,6 +81,7 @@ export default function PageCollection()
                                                                 "validFilters"  :   "none"
                                                             });
     const [anyQuery, setAnyQuery] = useState(null);
+    const [viewForFilterEditor, setViewForFilterEditor] = useState(null);
 
     const { getPictures, getAllowedFilters } = useContextApi();
     const { incomingError, incomingDialog, resetOverlay } = useContextOverlay();
@@ -52,7 +110,8 @@ export default function PageCollection()
         if (firstCall)
         {
             const allowedFiltersResponse = await getAllowedFilters(userIsLogged);
-            allowedFilters = allowedFiltersResponse.data;
+            allowedFilters = allowedFiltersResponse.data.allowedFilters;
+            console.log("FILTRI RECUPERATI: ", allowedFilters);
         }
 
         const response = await getPictures(userIsLogged, anyQuery);
@@ -94,10 +153,26 @@ export default function PageCollection()
         return queryToReturn;
     }
 
-    function addOrModifyFilter()
+    function addOrModifyFilter(filterToModify = undefined)
     {
         incomingDialog();
+        // In fase di aggiunta filtro, passare al sotto componente i filtri "allowed" non presenti tra i "valid". In questo contesto "filterToModify" è undefined.
+        // In fase di modifica passare direttamente il filtro da modificare, ovvero "filterToModify" che, essendo un filtro valido è sicuramente definito.
+        if (filterToModify)
+            // setViewForFilterEditor(CompFiltersEditing(false, filterToModify));
+        setViewForFilterEditor(<CompFiltersEditing addFilter={false} filtersArrayOrFilterObj={filterToModify} />);
+        else
+        {
+            let filtersToSelectFrom = [...allowedFilters];
+            if (collectionData.validFilters != "none")
+            {
+                const validFiltersKeys = Object.keys(collectionData.validFilters);
+                filtersToSelectFrom = allowedFilters.filter( item =>  (!validFiltersKeys.includes(Object.keys(item)[0])));
+            }
+            // setViewForFilterEditor(CompFiltersEditing(true, filtersToSelectFrom));
+            setViewForFilterEditor(<CompFiltersEditing addFilter={true} filtersArrayOrFilterObj={filtersToSelectFrom} />);
 
+        }
     }
 
     function changeData(what, how)
@@ -147,6 +222,7 @@ export default function PageCollection()
                                 Nessun elemento da mostrare
                             </h2>
                         :   <>
+                                { viewForFilterEditor }
                                 {
                                     (userIsLogged)  &&  <div id="collectionVeticalNav">
                                                         </div>
@@ -156,7 +232,7 @@ export default function PageCollection()
                                         <div className={style.info}>
                                             <h3>Totale foto:</h3>
                                             <span>
-                                                {collectionData.collection.length}
+                                                {collectionData.pagingData.total_pictures}
                                             </span>
                                         </div>
                                         <div className={style.control}>
@@ -309,7 +385,7 @@ export default function PageCollection()
                                                     </>
                                             }
                                         </div>
-                                        <button className={style.addFilterBtn} onClick={ () => addOrModifyFilter() }>Aggiungi</button>
+                                        <button className={style.addFilterBtn} type="button" onClick={ () => addOrModifyFilter() }>Aggiungi</button>
                                     </div>
                                 </div>
                                 <div id="collectionSlider">
