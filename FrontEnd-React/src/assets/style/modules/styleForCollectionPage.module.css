@@ -28,6 +28,31 @@
     @apply  p-1 h-full aspect-square border-2 border-black/20 bg-stone-400/20 text-black/20 rounded-md text-xs;
 }
 
+.filterView
+{
+    @apply w-full flex flex-col border-4 border-double border-blue-400;
+}
+
+.filterUpperGroup
+{
+    @apply w-full flex items-center;
+}
+
+.filterKey
+{
+    @apply h-full truncate border-2 border-black bg-stone-400 text-xs text-center flex items-center p-1 text-white;
+}
+
+.filterBtn
+{
+    @apply h-full aspect-square text-xs border-2 border-black hover:border-blue-400 text-black hover:text-blue-400 p-1;
+}
+
+.filterValue
+{
+    @apply  w-full truncate p-1 border-2 border-t-0 border-black bg-stone-300 text-blue-500 text-xs italic relative;
+}
+
 .addFilterBtn
 {
     @apply p-1 border-2 border-black hover:border-blue-400 text-black hover:text-blue-400 bg-stone-400 hover:bg-white text-base rounded-md;

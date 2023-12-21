@@ -11,6 +11,8 @@ import style from "../assets/style/modules/styleForCollectionPage.module.css";
 
 import { returnErrorMsg } from "../assets/utilities/errorRelatedFunctions";
 
+let allowedFilters = [];
+
 export default function PageCollection()
 {
     const [collectionData, setCollectionData] = useState(   {
@@ -19,17 +21,15 @@ export default function PageCollection()
                                                                                         "current_page"      :   1,
                                                                                         "pictures_per_page" :   4
                                                                                     },                                                                
-                                                                "validFilters"  :   null
+                                                                "validFilters"  :   "none"
                                                             });
     const [anyQuery, setAnyQuery] = useState(null);
 
     const { getPictures, getAllowedFilters } = useContextApi();
-    const { incomingError, resetOverlay } = useContextOverlay();
+    const { incomingError, incomingDialog, resetOverlay } = useContextOverlay();
     const { getDefaultDialogParams, dialogOn, dialogForError } = useContextDialog();
     const { userIsLogged } = useContextUserAuthentication();
     const navigate = useNavigate();
-
-    let allowedFilters = [];
 
     useEffect( () =>
         {
@@ -64,7 +64,7 @@ export default function PageCollection()
                                                                                                     "current_page"      :   1,
                                                                                                     "pictures_per_page" :   4
                                                                                                 },
-                                        "validFilters"      :   response.data.valid_filters ?? null
+                                        "validFilters"      :   response.data.valid_filters ?? "none"
                                     };
             setCollectionData(newCollectionData);
         }
@@ -88,10 +88,16 @@ export default function PageCollection()
     function setFiltersQuery()
     {
         let queryToReturn = "";
-        if (collectionData.validFilters)
+        if (collectionData.validFilters != "none")
             for (key in collectionData.validFilters)
                 queryToReturn += "&filter[".concat(key, "]=", collectionData.validFilters[key]);
         return queryToReturn;
+    }
+
+    function addOrModifyFilter()
+    {
+        incomingDialog();
+
     }
 
     function changeData(what, how)
@@ -277,10 +283,33 @@ export default function PageCollection()
                                         </div>
                                     </div>
                                     <div id="filters">
-                                        <h3 className="text-xl text-green-300">Filtri di ricerca</h3>
+                                        <h3 className="text-xl text-blue-800">Filtri di ricerca</h3>
                                         <div id="filtersBox">
+                                            {
+                                                (collectionData.validFilters == "none")   
+                                                ?   <h2 className="text-xl text-slate-950">
+                                                        Assenti
+                                                    </h2>
+                                                :   <>
+                                                        {
+                                                            Object.keys(collectionData.validFilters).map( filterKey =>
+                                                                <div className={style.filterView}>
+                                                                    <div className={style.filterUpperGroup}>
+                                                                        <span className={style.filterKey}>{filterKey}</span>
+                                                                        <button className={`${style.filterBtn} bg-yellow-200 hover:bg-yellow-300`}>
+                                                                            <i class="fa-solid fa-pencil"></i>
+                                                                        </button>
+                                                                        <button className={`${style.filterBtn} bg-red-400 hover:bg-red-700`}>
+                                                                            <i class="fa-solid fa-trash-can"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                    <span className={style.filterValue}>{collectionData.validFilters[filterKey]}</span>
+                                                                </div>)
+                                                        }
+                                                    </>
+                                            }
                                         </div>
-                                        <button className={style.addFilterBtn}>Aggiungi</button>
+                                        <button className={style.addFilterBtn} onClick={ () => addOrModifyFilter() }>Aggiungi</button>
                                     </div>
                                 </div>
                                 <div id="collectionSlider">

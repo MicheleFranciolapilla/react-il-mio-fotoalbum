@@ -4,9 +4,30 @@
 
 body
 {
-    @apply h-screen overflow-hidden;
+    @apply h-screen overflow-hidden select-none;
 }
 
+/* Larghezza della scrollbar */
+::-webkit-scrollbar 
+{
+    width: 6px;
+    background-color: transparent;
+}
+  
+/* Proprietà del binario */
+::-webkit-scrollbar-track 
+{
+    background: lightgray;
+    border-radius: 2px;
+}
+   
+/* Proprietà della barra mobile */
+::-webkit-scrollbar-thumb 
+{
+    background: darkgray; 
+    border-radius: 5px;
+}
+  
 .active
 {
     @apply border-b-2 border-b-blue-400 text-blue-400 hover:text-blue-400 cursor-default;
@@ -39,10 +60,10 @@ body
 
 #filters
 {
-    @apply w-full max-h-[45%] p-1 border-2 border-zinc-600 bg-zinc-400 rounded-md flex flex-col items-center justify-between gap-4;
+    @apply w-full max-h-[45%] py-1 border-2 border-zinc-600 bg-zinc-400 rounded-md flex flex-col items-center justify-between gap-3;
 }
 
 #filtersBox
 {
-    @apply w-[90%] h-[50&] p-1 bg-stone-200 border-2 border-stone-300 flex flex-col items-center justify-between gap-3;
+    @apply w-[95%] grow px-1 py-2 bg-stone-200 border-2 border-stone-800 flex flex-col items-center justify-between gap-4 overflow-y-auto;
 }
