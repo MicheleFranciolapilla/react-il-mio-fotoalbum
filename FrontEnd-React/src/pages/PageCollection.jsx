@@ -117,7 +117,7 @@ export default function PageCollection()
                     {
                         (collectionData.collection.length === 0)    
                         ?   <h2 className={ style.noDataMessage }>
-                                Nessuna foto disponibile
+                                Nessun elemento da mostrare
                             </h2>
                         :   <>
                                 {
@@ -132,12 +132,6 @@ export default function PageCollection()
                                                 {collectionData.collection.length}
                                             </span>
                                         </div>
-                                        <div className={style.info}>
-                                            <h3>Totale pagine:</h3>
-                                            <span>
-                                                {collectionData.pagingData.total_pages}
-                                            </span>
-                                        </div>
                                         <div className={style.control}>
                                             <div className={style.info}>
                                                 <h3>Foto per pagina:</h3>
@@ -148,9 +142,9 @@ export default function PageCollection()
                                             <div className={style.controlsGroup}>
 
                                                 <button 
-                                                    disabled={collectionData.pagingData.pictures_per_page === 3}
+                                                    disabled={collectionData.pagingData.pictures_per_page == 3}
                                                     className=  {
-                                                                    collectionData.pagingData.pictures_per_page === 3
+                                                                    collectionData.pagingData.pictures_per_page == 3
                                                                         ?   style.controlBtnDisabled 
                                                                         :   style.controlBtn
                                                                 }
@@ -160,9 +154,9 @@ export default function PageCollection()
                                                 </button>
 
                                                 <button
-                                                    disabled={collectionData.pagingData.pictures_per_page === 3}
+                                                    disabled={collectionData.pagingData.pictures_per_page == 3}
                                                     className=  {
-                                                                    collectionData.pagingData.pictures_per_page === 3
+                                                                    collectionData.pagingData.pictures_per_page == 3
                                                                         ?   style.controlBtnDisabled 
                                                                         :   style.controlBtn
                                                                 }
@@ -172,9 +166,9 @@ export default function PageCollection()
                                                 </button>
 
                                                 <button
-                                                    disabled={collectionData.pagingData.pictures_per_page === 10}
+                                                    disabled={collectionData.pagingData.pictures_per_page == 10}
                                                     className=  {
-                                                                    collectionData.pagingData.pictures_per_page === 10
+                                                                    collectionData.pagingData.pictures_per_page == 10
                                                                         ?   style.controlBtnDisabled 
                                                                         :   style.controlBtn
                                                                 }
@@ -184,9 +178,9 @@ export default function PageCollection()
                                                 </button>
 
                                                 <button
-                                                    disabled={collectionData.pagingData.pictures_per_page === 10}
+                                                    disabled={collectionData.pagingData.pictures_per_page == 10}
                                                     className=  {
-                                                                    collectionData.pagingData.pictures_per_page === 10
+                                                                    collectionData.pagingData.pictures_per_page == 10
                                                                         ?   style.controlBtnDisabled 
                                                                         :   style.controlBtn
                                                                 }
@@ -195,6 +189,12 @@ export default function PageCollection()
                                                     <i class="fa-solid fa-forward-fast"></i>
                                                 </button>
                                             </div>
+                                        </div>
+                                        <div className={style.info}>
+                                            <h3>Totale pagine:</h3>
+                                            <span>
+                                                {collectionData.pagingData.total_pages}
+                                            </span>
                                         </div>
                                         <div className={style.control}>
                                             <div className={style.info}>
@@ -206,9 +206,9 @@ export default function PageCollection()
                                             <div className={style.controlsGroup}>
 
                                                 <button
-                                                    disabled={collectionData.pagingData.current_page === 1}
+                                                    disabled={collectionData.pagingData.current_page == 1}
                                                     className=  {
-                                                                    collectionData.pagingData.current_page === 1
+                                                                    collectionData.pagingData.current_page == 1
                                                                         ?   style.controlBtnDisabled 
                                                                         :   style.controlBtn
                                                                 }
@@ -218,9 +218,9 @@ export default function PageCollection()
                                                 </button>
 
                                                 <button
-                                                    disabled={collectionData.pagingData.current_page === 1}
+                                                    disabled={collectionData.pagingData.current_page == 1}
                                                     className=  {
-                                                                    collectionData.pagingData.current_page === 1
+                                                                    collectionData.pagingData.current_page == 1
                                                                         ?   style.controlBtnDisabled 
                                                                         :   style.controlBtn
                                                                 }
@@ -230,9 +230,9 @@ export default function PageCollection()
                                                 </button>
 
                                                 <button
-                                                    disabled={collectionData.pagingData.current_page === collectionData.pagingData.total_pages}
+                                                    disabled={collectionData.pagingData.current_page == collectionData.pagingData.total_pages}
                                                     className=  {
-                                                                    collectionData.pagingData.current_page === collectionData.pagingData.total_pages
+                                                                    collectionData.pagingData.current_page == collectionData.pagingData.total_pages
                                                                         ?   style.controlBtnDisabled 
                                                                         :   style.controlBtn
                                                                 }
@@ -242,9 +242,9 @@ export default function PageCollection()
                                                 </button>
 
                                                 <button
-                                                    disabled={collectionData.pagingData.current_page === collectionData.pagingData.total_pages}
+                                                    disabled={collectionData.pagingData.current_page == collectionData.pagingData.total_pages}
                                                     className=  {
-                                                                    collectionData.pagingData.current_page === collectionData.pagingData.total_pages
+                                                                    collectionData.pagingData.current_page == collectionData.pagingData.total_pages
                                                                         ?   style.controlBtnDisabled 
                                                                         :   style.controlBtn
                                                                 }
@@ -256,7 +256,10 @@ export default function PageCollection()
                                         </div>
                                     </div>
                                     <div id="filters">
-
+                                        <h3 className="text-xl text-green-300">Filtri di ricerca</h3>
+                                        <div id="filtersBox">
+                                        </div>
+                                        <button className={style.addFilterBtn}>Aggiungi</button>
                                     </div>
                                 </div>
                                 <div id="collectionSlider">
