@@ -29,21 +29,36 @@ function filterItalianName(filterEnglishName)
 // Nel caso di modifica di un filtro già valido, addFilter è false e filtersArrayOrFilterObj è un oggetto con una sola chiave ed è l'oggetto da modificare
 function CompFiltersEditing(props)
 {
-    const { addFilter, filtersArrayOrFilterObj } = props;
+    const { addFilter, filtersArrayOrFilterObj, onEventClick } = props;
 
     console.log("VALORE BOOLEANO: ", addFilter);
     console.log("FILTERS: ", filtersArrayOrFilterObj);
 
     const [selectedFilter, setSelectedFilter] = useState(null);
+    const [filterToHandle, setFilterToHandle] = useState( addFilter ? null : filtersArrayOrFilterObj );
 
-    function clickOnFilter(index, filterObj)
+    useEffect( () =>
+        {
+            if (selectedFilter)
+                setFilterToHandle(filtersArrayOrFilterObj[selectedFilter]);
+        }, [selectedFilter]);
+
+    function clickOnFilter(index)
     {
-        setSelectedFilter(index);
+        selectedFilter ?? setSelectedFilter(index);
     }
 
-    function keepFilterHighlighted(index)
+    function setClasses(index)
     {
-        return (selectedFilter == index) ? "border-2 border-blue-400 text-blue-400 px-2 hover:no-underline" : "";
+        if (selectedFilter !== null)
+        {
+            if (selectedFilter === index)
+                return "border-blue-400 text-blue-400 hover:no-underline cursor-default";
+            else
+                return "hover:no-underline hover:text-black cursor-default";
+        }
+        else 
+            return "";
     }
 
     return (
@@ -54,16 +69,44 @@ function CompFiltersEditing(props)
                                     <ul className={dialogStyle.filtersList}>
                                         {
                                             filtersArrayOrFilterObj.map( (filterObj, index) => 
-                                                <li key={`Filter-Select-${index}`}>
+                                                <li 
+                                                    key={`Filter-Select-${index}`}
+                                                    className={dialogStyle.filterItem}
+                                                >
                                                     <button 
-                                                        className={`${dialogStyle.filterName} ${keepFilterHighlighted(index)}`}
-                                                        onClick={ () => clickOnFilter(index, filterObj) }
+                                                        className={`${dialogStyle.filterName} ${setClasses(index)}`}
+                                                        type="button"
+                                                        onClick={ () => clickOnFilter(index) }
                                                     >
                                                         { filterItalianName(Object.keys(filterObj)[0]) }
                                                     </button>
+                                                    {
+                                                        (selectedFilter === index)
+                                                        &&
+                                                        <div className={dialogStyle.filterInputBox}>
+                                                            
+                                                        </div>
+                                                    }
                                                 </li>)
                                         }
                                     </ul>
+                                    <div className={dialogStyle.buttonsGroup}>
+                                        <button
+                                            className={dialogStyle.buttonsInGroup}
+                                            type="button"
+                                            onClick={ () => onEventClick(false) }
+                                        >
+                                            Annulla
+                                        </button>
+                                        {
+                                            (selectedFilter !== null) &&    <button 
+                                                                                className={dialogStyle.buttonsInGroup}
+                                                                                type="button"
+                                                                            >
+                                                                                Conferma
+                                                                            </button>
+                                        }
+                                    </div>
                                 </div>
             }
         </div>
@@ -82,6 +125,7 @@ export default function PageCollection()
                                                             });
     const [anyQuery, setAnyQuery] = useState(null);
     const [viewForFilterEditor, setViewForFilterEditor] = useState(null);
+    const [dialogViewOn, setDialogViewOn] = useState(false);
 
     const { getPictures, getAllowedFilters } = useContextApi();
     const { incomingError, incomingDialog, resetOverlay } = useContextOverlay();
@@ -153,14 +197,26 @@ export default function PageCollection()
         return queryToReturn;
     }
 
+    function clickInDialogView(newData)
+    {
+        setDialogViewOn(false);
+        resetOverlay();
+    }
+
     function addOrModifyFilter(filterToModify = undefined)
     {
         incomingDialog();
+        setDialogViewOn(true);
         // In fase di aggiunta filtro, passare al sotto componente i filtri "allowed" non presenti tra i "valid". In questo contesto "filterToModify" è undefined.
         // In fase di modifica passare direttamente il filtro da modificare, ovvero "filterToModify" che, essendo un filtro valido è sicuramente definito.
         if (filterToModify)
             // setViewForFilterEditor(CompFiltersEditing(false, filterToModify));
-        setViewForFilterEditor(<CompFiltersEditing addFilter={false} filtersArrayOrFilterObj={filterToModify} />);
+        setViewForFilterEditor(
+            <CompFiltersEditing 
+                addFilter={false} 
+                filtersArrayOrFilterObj={filterToModify} 
+                onEventClick={ (newData) => clickInDialogView(newData) } 
+            />);
         else
         {
             let filtersToSelectFrom = [...allowedFilters];
@@ -170,7 +226,12 @@ export default function PageCollection()
                 filtersToSelectFrom = allowedFilters.filter( item =>  (!validFiltersKeys.includes(Object.keys(item)[0])));
             }
             // setViewForFilterEditor(CompFiltersEditing(true, filtersToSelectFrom));
-            setViewForFilterEditor(<CompFiltersEditing addFilter={true} filtersArrayOrFilterObj={filtersToSelectFrom} />);
+            setViewForFilterEditor(
+                <CompFiltersEditing 
+                    addFilter={true} 
+                    filtersArrayOrFilterObj={filtersToSelectFrom} 
+                    onEventClick={ (newData) => clickInDialogView(newData) } 
+                />);
 
         }
     }
@@ -222,7 +283,7 @@ export default function PageCollection()
                                 Nessun elemento da mostrare
                             </h2>
                         :   <>
-                                { viewForFilterEditor }
+                                {  dialogViewOn && viewForFilterEditor }
                                 {
                                     (userIsLogged)  &&  <div id="collectionVeticalNav">
                                                         </div>
