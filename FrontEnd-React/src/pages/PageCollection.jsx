@@ -317,15 +317,15 @@ export default function PageCollection()
             const allAuthors = await getAllUsers();
             authors = allAuthors.data.users;
             authors.forEach( author => author.name += " ".concat(author.surname));
-            // Inseriamo nell'array degli authors, in prima posizione, uno user con id negativo (-1) e name ("Tutti"), il che implica una NON SELEZIONE
-            authors.splice(0,0, { "id" : -1, "name" : "Tutti" });
+            // Inseriamo nell'array degli authors, in prima posizione, uno user con id negativo (-1) e name ("Tutti - Nessun filtro"), il che implica una NON SELEZIONE
+            authors.splice(0,0, { "id" : -1, "name" : "Tutti (Nessun filtro)" });
             console.log("AUTORI RECUPERATI: ", authors);
             if (userIsLogged)
             {
                 const allCategories = await getAllCategories();
                 categories = allCategories.data.categories;
-                // Inseriamo nell'array delle categorie, in prima posizione, una categoria con id negativo (-1) e name ("Tutte"), il che implica una NON SELEZIONE
-                categories.splice(0, 0, { "id" : -1, "name" : "Tutte" });
+                // Inseriamo nell'array delle categorie, in prima posizione, una categoria con id negativo (-1) e name ("Tutte - Nessun filtro"), il che implica una NON SELEZIONE
+                categories.splice(0, 0, { "id" : -1, "name" : "Tutte (Nessun filtro)" });
                 console.log("CATEGORIE RECUPERATE: ", categories);
             }
         }
@@ -503,6 +503,12 @@ export default function PageCollection()
             valueToShow = itemById.name;
         }
         return valueToShow;
+    }
+
+    function canAddMoreFilter()
+    {
+        // Ricordarsi di controllare perchè il click su (tutti) non produce azione
+        // if (allowedFilters !== Object.keys(collectionData.validFilters))
     }
 
     return (
@@ -688,7 +694,14 @@ export default function PageCollection()
                                                     </>
                                             }
                                         </div>
-                                        <button className={style.addFilterBtn} type="button" onClick={ () => addOrModifyFilter() }>Aggiungi</button>
+                                        <button 
+                                            // disabled={}
+                                            className={style.addFilterBtn} 
+                                            type="button" 
+                                            onClick={ () => addOrModifyFilter() }
+                                        >
+                                            Aggiungi
+                                        </button>
                                     </div>
                                 </div>
                                 <div id="collectionSlider">

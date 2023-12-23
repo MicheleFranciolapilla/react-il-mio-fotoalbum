@@ -40,7 +40,7 @@
 
 .filterKey
 {
-    @apply h-full truncate border-2 border-black bg-stone-400 text-xs text-center flex items-center p-1 text-white;
+    @apply h-full truncate border-2 border-black bg-stone-400 text-xs text-center flex items-center p-1 text-white grow;
 }
 
 .filterBtn
