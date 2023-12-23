@@ -61,6 +61,18 @@ function CompFiltersEditing(props)
             }
         }, [filterToHandle]);
 
+    function getKeyFromFilterToHandle()
+    {
+        const key = Object.keys(filterToHandle)[0];
+        return key;
+    }
+
+    function getValueFromFilterToHandle()
+    {
+        const value = Object.values(filterToHandle)[0];
+        return value;
+    }
+
     function initializeSelectedFilter()
     {
         const initializedFilterKey =  Object.keys(filtersArray[selectedFilter])[0];
@@ -96,10 +108,40 @@ function CompFiltersEditing(props)
     {
         console.log("INTERO FILTER TO HANDLE: ", filterToHandle);
         console.log("INTERO ALLOWED FILTERS: ", allowedFilters);
-        const filterKey = Object.keys(filterToHandle)[0];
+        const filterKey = getKeyFromFilterToHandle();
         const filterFromAllowedArray = allowedFilters.find( filterToCheck => Object.keys(filterToCheck)[0] == filterKey );
         const filterType = Object.values(filterFromAllowedArray)[0];
         return filterType;
+    }
+
+    function updateValue(newValue, filterName, inputIdentifier)
+    {
+        let filterValue = newValue;
+        if (inputIdentifier === "string")
+            filterValue = filterValue.toLowerCase();
+        const newFilterObj = { [filterName] : filterValue }
+        setFilterToHandle(newFilterObj);
+    }
+
+    function isValidStringInput()
+    {
+        const inputToValidate = getValueFromFilterToHandle().trim();
+        if (inputToValidate == "") 
+            return false;
+        const regex = /^[a-z0-9\s]*$/;
+        return regex.test(inputToValidate);
+    }
+
+    function eventSubmit(event)
+    {
+        event.preventDefault();
+        if (inputType == "string")
+        {
+            if (isValidStringInput())
+                onEventClick({ [getKeyFromFilterToHandle()] : getValueFromFilterToHandle().trim() }, { "error" : false });
+            else
+                onEventClick(null, { "error" : true, "msg" : "Filtro non valido!" });
+        }
     }
 
     return (
@@ -126,6 +168,7 @@ function CompFiltersEditing(props)
                                     (selectedFilter === index) &&   <form 
                                                                         id="addOrModifyFilterForm" 
                                                                         className={dialogStyle.filterInputBox}
+                                                                        onSubmit={ (event) => eventSubmit(event) }
                                                                     >
                                                                         {
                                                                             (inputType !== null) &&
@@ -137,10 +180,13 @@ function CompFiltersEditing(props)
                                                                                         placeholder="testo da cercare nel titolo..."
                                                                                         min="3"
                                                                                         max="100"
-                                                                                        value={filterToHandle[Object.keys(filterToHandle)[0]]}
+                                                                                        value={getValueFromFilterToHandle()}
                                                                                         onChange=   { 
                                                                                                         (event) => 
-                                                                                                            updateValue(event.target, Object.keys(filterToHandle)[0]) 
+                                                                                                            updateValue(
+                                                                                                                event.target.value, 
+                                                                                                                getKeyFromFilterToHandle(),
+                                                                                                                "string") 
                                                                                                     }
                                                                                     />
                                                                                 }
@@ -165,7 +211,7 @@ function CompFiltersEditing(props)
                     <button
                         className={dialogStyle.buttonsInGroup}
                         type="button"
-                        onClick={ () => onEventClick(false) }
+                        onClick={ () => onEventClick(null, { "error" : false }) }
                     >
                         Annulla
                     </button>
@@ -278,15 +324,40 @@ export default function PageCollection()
     {
         let queryToReturn = "";
         if (collectionData.validFilters != "none")
-            for (key in collectionData.validFilters)
+            for (let key in collectionData.validFilters)
                 queryToReturn += "&filter[".concat(key, "]=", collectionData.validFilters[key]);
         return queryToReturn;
     }
 
-    function clickInDialogView(newData)
+    function clickInDialogView(newData, anyError)
     {
-        setDialogViewOn(false);
-        resetOverlay();
+        if (anyError.error)
+        {
+            incomingError();
+            dialogForError();
+            const errorDialogParams = getDefaultDialogParams();
+            dialogOn(   {
+                            ...errorDialogParams, 
+                            "title"             :   "ERRORE", 
+                            "message1"          :   anyError.msg,
+                            "twoButtons"        :   false,
+                            "timingClose"       :   true,
+                            "timerMsec"         :   3000,
+                            "functionTiming"    :   () =>
+                                                        {
+                                                            setDialogViewOn(false);
+                                                            resetOverlay();
+                                                        }
+                        });
+        }
+        else
+        {
+            // Nel caso in cui ci sia un nuovo filtro (o un filtro modificato) si setta la query string con lo stesso, aggiungendoci, in coda, gli eventuali altri filtri attivi. L'aggiunta dei filtri attivi viene fatta in coda e non in testa poichè nel backend abbiamo l'impostazione "firstIsValid true", grazie alla quale, nel caso di filtro duplicato (se lo abbiamo modificato) passa come valido il primo valore presente nella query string
+            if (newData)
+                changeData("filters", `&filter[${Object.keys(newData)[0]}]=${Object.values(newData)[0]}`.concat(setFiltersQuery()));
+            setDialogViewOn(false);
+            resetOverlay();
+        }
     }
 
     function addOrModifyFilter(filterToModify = undefined)
@@ -302,7 +373,7 @@ export default function PageCollection()
             <CompFiltersEditing 
                 addFilter={false} 
                 filtersArray={[filterToModify]} 
-                onEventClick={ (newData) => clickInDialogView(newData) } 
+                onEventClick={ (newData, anyError) => clickInDialogView(newData, anyError) } 
             />);
         else
         {
@@ -317,7 +388,7 @@ export default function PageCollection()
                 <CompFiltersEditing 
                     addFilter={true} 
                     filtersArray={filtersToSelectFrom} 
-                    onEventClick={ (newData) => clickInDialogView(newData) } 
+                    onEventClick={ (newData, anyError) => clickInDialogView(newData, anyError) } 
                 />);
 
         }
@@ -516,8 +587,8 @@ export default function PageCollection()
                                                     </h2>
                                                 :   <>
                                                         {
-                                                            Object.keys(collectionData.validFilters).map( filterKey =>
-                                                                <div className={style.filterView}>
+                                                            Object.keys(collectionData.validFilters).map( (filterKey, index) =>
+                                                                <div key={`valid-filter-nr-${index}`} className={style.filterView}>
                                                                     <div className={style.filterUpperGroup}>
                                                                         <span className={style.filterKey}>{filterKey}</span>
                                                                         <button className={`${style.filterBtn} bg-yellow-200 hover:bg-yellow-300`}>
