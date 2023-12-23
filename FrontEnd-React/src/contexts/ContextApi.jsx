@@ -12,6 +12,18 @@ export function ContextApiProvider({ children })
             return response;
     }
 
+    async function getAllCategories()
+    {
+        const response = await axiosApi.get("/admin/categories");
+        return response;
+    }
+
+    async function getAllUsers()
+    {
+        const response = await axiosApi.get("/users");
+        return response;
+    }
+
     async function getPictures(forAdmin, queryString = null)
     {
         const endPoint = forAdmin ? "/admin/pictures" : "pictures";
@@ -36,7 +48,7 @@ export function ContextApiProvider({ children })
     }
 
     return (
-        <ContextApi.Provider value={{ logInSignUp, verifyToken, getPictures, getAllowedFilters }}>
+        <ContextApi.Provider value={{ logInSignUp, verifyToken, getPictures, getAllowedFilters, getAllUsers, getAllCategories }}>
             { children }
         </ContextApi.Provider>
     )

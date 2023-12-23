@@ -13,6 +13,8 @@ import dialogStyle from "../assets/style/modules/styleForFiltersEditing.module.c
 import { returnErrorMsg } from "../assets/utilities/errorRelatedFunctions";
 
 let allowedFilters = [];
+let users = [];
+let categories = [];
 
 function filterItalianName(filterEnglishName)
 {
@@ -43,9 +45,23 @@ function CompFiltersEditing(props)
             if (selectedFilter !== null)
             {
                 console.log("Selected Filter ha cambiato stato");
-                setFilterToHandle(filtersArray[selectedFilter]);
+                const initializedFilter = initializeSelectedFilter();
+                setFilterToHandle(initializedFilter);
             }
         }, [selectedFilter]);
+
+    function initializeSelectedFilter()
+    {
+        const initializedFilterKey =  Object.keys(filtersArray[selectedFilter])[0];
+        let initializedFilterValue = "";
+        switch (filtersArray[selectedFilter][initializedFilterKey])
+        {
+            case "boolean"  :   break;
+            case "number"   :   initializedFilterValue = 0;
+                                break;
+        }
+        return { initializedFilterKey : initializedFilterValue };
+    }
 
     function clickOnFilter(index)
     {
@@ -63,6 +79,10 @@ function CompFiltersEditing(props)
         }
         else 
             return "";
+    }
+
+    function inputType()
+    {
     }
 
     return (
@@ -90,6 +110,7 @@ function CompFiltersEditing(props)
                                                                         id="addOrModifyFilterForm" 
                                                                         className={dialogStyle.filterInputBox}
                                                                     >
+
                                                                     </form>
                                 }
                             </li>)
@@ -132,7 +153,7 @@ export default function PageCollection()
     const [viewForFilterEditor, setViewForFilterEditor] = useState(null);
     const [dialogViewOn, setDialogViewOn] = useState(false);
 
-    const { getPictures, getAllowedFilters } = useContextApi();
+    const { getPictures, getAllowedFilters, getAllUsers, getAllCategories } = useContextApi();
     const { incomingError, incomingDialog, resetOverlay } = useContextOverlay();
     const { getDefaultDialogParams, dialogOn, dialogForError } = useContextDialog();
     const { userIsLogged } = useContextUserAuthentication();
@@ -158,9 +179,22 @@ export default function PageCollection()
 
         if (firstCall)
         {
+            // Prevedere il caso in cui outcome sia false (per ogni chiamata) e lanciare opportuno messaggio di errore
             const allowedFiltersResponse = await getAllowedFilters(userIsLogged);
             allowedFilters = allowedFiltersResponse.data.allowedFilters;
             console.log("FILTRI RECUPERATI: ", allowedFilters);
+            // Ci sarà sicuramente almeno uno user (il super admin)
+            const allUsers = await getAllUsers();
+            users = allUsers.data.users;
+            console.log("USERS RECUPERATI: ", users);
+            if (userIsLogged)
+            {
+                const allCategories = await getAllCategories();
+                categories = allCategories.data.categories;
+                // Inseriamo nell'array delle categorie, in prima posizione, una categoria con id negativo (-1) e name ("Nessuna"), quindi, anche questo array non potrà essere vuoto
+                categories.splice(0, 0, { "id" : -1, "name" : "Nessuna" });
+                console.log("CATEGORIE RECUPERATE: ", categories);
+            }
         }
 
         const response = await getPictures(userIsLogged, anyQuery);
