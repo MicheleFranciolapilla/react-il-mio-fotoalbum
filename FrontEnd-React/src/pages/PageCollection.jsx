@@ -13,7 +13,7 @@ import dialogStyle from "../assets/style/modules/styleForFiltersEditing.module.c
 import { returnErrorMsg } from "../assets/utilities/errorRelatedFunctions";
 
 let allowedFilters = [];
-let users = [];
+let authors = [];
 let categories = [];
 
 function filterItalianName(filterEnglishName)
@@ -147,6 +147,8 @@ function CompFiltersEditing(props)
             else
                 onEventClick(null, { "error" : true, "msg" : "Filtro non valido!" });
         }
+        else if (inputType == "number")
+            onEventClick({ [getKeyFromFilterToHandle()] : getValueFromFilterToHandle() }, { "error" : false });
     }
 
     return (
@@ -201,8 +203,40 @@ function CompFiltersEditing(props)
                                                                                 }
                                                                                 {
                                                                                     (inputType === "number") &&
-                                                                                    <select>
-
+                                                                                    <select 
+                                                                                        className={dialogStyle.selectBox}
+                                                                                        name={getKeyFromFilterToHandle()}
+                                                                                        value={getValueFromFilterToHandle()}
+                                                                                        onChange=   {
+                                                                                                        (event) =>
+                                                                                                            updateValue(
+                                                                                                                event.target.value,
+                                                                                                                getKeyFromFilterToHandle(),
+                                                                                                                "select")
+                                                                                                    }
+                                                                                    >
+                                                                                        {
+                                                                                            (getKeyFromFilterToHandle() == "author_id")
+                                                                                            &&
+                                                                                            authors.map( author => 
+                                                                                                <option
+                                                                                                    key={`author-${author.id}`}
+                                                                                                    value={author.id}
+                                                                                                >
+                                                                                                    { author.name }
+                                                                                                </option>)
+                                                                                        }
+                                                                                        {
+                                                                                            (getKeyFromFilterToHandle() == "category_id")
+                                                                                            &&
+                                                                                            categories.map( category => 
+                                                                                                <option
+                                                                                                    key={`category-${category.id}`}
+                                                                                                    value={category.id}
+                                                                                                >
+                                                                                                    { category.name }
+                                                                                                </option>)
+                                                                                        }
                                                                                     </select>
                                                                                 }
                                                                             </>)
@@ -280,11 +314,12 @@ export default function PageCollection()
             allowedFilters = allowedFiltersResponse.data.allowedFilters;
             console.log("FILTRI RECUPERATI: ", allowedFilters);
             // Ci sarà sicuramente almeno uno user (il super admin)
-            const allUsers = await getAllUsers();
-            users = allUsers.data.users;
-            // Inseriamo nell'array degli users, in prima posizione, uno user con id negativo (-1) e name ("Tutti"), il che implica una NON SELEZIONE
-            users.splice(0,0, { "id" : -1, "name" : "Tutti" });
-            console.log("USERS RECUPERATI: ", users);
+            const allAuthors = await getAllUsers();
+            authors = allAuthors.data.users;
+            authors.forEach( author => author.name += " ".concat(author.surname));
+            // Inseriamo nell'array degli authors, in prima posizione, uno user con id negativo (-1) e name ("Tutti"), il che implica una NON SELEZIONE
+            authors.splice(0,0, { "id" : -1, "name" : "Tutti" });
+            console.log("AUTORI RECUPERATI: ", authors);
             if (userIsLogged)
             {
                 const allCategories = await getAllCategories();
@@ -373,7 +408,10 @@ export default function PageCollection()
                         validFiltersQuery = "&" + validFiltersQuery;
                 }
                 console.log("VALID FILTERS QUERY POST FIXING: ", validFiltersQuery);
-                changeData("filters", `&filter[${Object.keys(newData)[0]}]=${Object.values(newData)[0]}`.concat(validFiltersQuery));
+                let currentQuery = `&filter[${Object.keys(newData)[0]}]=${Object.values(newData)[0]}`;
+                if (["author_id", "category_id"].includes(Object.keys(newData)[0]) && (parseInt(Object.values(newData)[0]) < 1))
+                    currentQuery = "";
+                changeData("filters", currentQuery.concat(validFiltersQuery));
             }
             setDialogViewOn(false);
             resetOverlay();
@@ -449,6 +487,22 @@ export default function PageCollection()
         const filtersQuery = (what === "filters") ? how : setFiltersQuery();
         console.log("FILTERSQUERY IN CHANGE DATA: ", filtersQuery);
         setAnyQuery(`?page=${CP}&itemsxpage=${PPP}${filtersQuery}`);
+    }
+
+    function filterValueToShow(filterKey)
+    {
+        let valuesArray = null;
+        if (filterKey === "author_id")
+            valuesArray = authors;
+        else if (filterKey === "category_id")
+            valuesArray = categories;
+        let valueToShow = collectionData.validFilters[filterKey];
+        if (valuesArray)
+        {
+            const itemById = valuesArray.find( item => item.id == valueToShow );
+            valueToShow = itemById.name;
+        }
+        return valueToShow;
     }
 
     return (
@@ -626,7 +680,9 @@ export default function PageCollection()
                                                                             <i class="fa-solid fa-trash-can"></i>
                                                                         </button>
                                                                     </div>
-                                                                    <span className={style.filterValue}>{collectionData.validFilters[filterKey]}</span>
+                                                                    <span className={style.filterValue}>
+                                                                        {filterValueToShow(filterKey)}
+                                                                    </span>
                                                                 </div>)
                                                         }
                                                     </>
