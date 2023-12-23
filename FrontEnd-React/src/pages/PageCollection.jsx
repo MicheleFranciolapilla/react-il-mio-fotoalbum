@@ -39,6 +39,7 @@ function CompFiltersEditing(props)
     // Se siamo in fase di aggiunta di un filtro allora, all'avvio del componente, selectedFilter dovrà essere null, in caso contrario sarà definito (0)
     const [selectedFilter, setSelectedFilter] = useState( addFilter ? null : 0 );
     const [filterToHandle, setFilterToHandle] = useState( addFilter ? null : filtersArray[0] );
+    const [inputType, setInputType] = useState( addFilter ? null : getInputType() );
 
     useEffect( () =>
         {
@@ -50,6 +51,16 @@ function CompFiltersEditing(props)
             }
         }, [selectedFilter]);
 
+    useEffect( () =>
+        {
+            if (filterToHandle !== null)
+            {
+                const inputTypeToSet = getInputType();
+                console.log("INPUT TYPE: ", inputTypeToSet);
+                setInputType(inputTypeToSet);
+            }
+        }, [filterToHandle]);
+
     function initializeSelectedFilter()
     {
         const initializedFilterKey =  Object.keys(filtersArray[selectedFilter])[0];
@@ -60,7 +71,7 @@ function CompFiltersEditing(props)
             case "number"   :   initializedFilterValue = 0;
                                 break;
         }
-        return { initializedFilterKey : initializedFilterValue };
+        return { [initializedFilterKey] : initializedFilterValue };
     }
 
     function clickOnFilter(index)
@@ -81,8 +92,14 @@ function CompFiltersEditing(props)
             return "";
     }
 
-    function inputType()
+    function getInputType()
     {
+        console.log("INTERO FILTER TO HANDLE: ", filterToHandle);
+        console.log("INTERO ALLOWED FILTERS: ", allowedFilters);
+        const filterKey = Object.keys(filterToHandle)[0];
+        const filterFromAllowedArray = allowedFilters.find( filterToCheck => Object.keys(filterToCheck)[0] == filterKey );
+        const filterType = Object.values(filterFromAllowedArray)[0];
+        return filterType;
     }
 
     return (
@@ -110,7 +127,35 @@ function CompFiltersEditing(props)
                                                                         id="addOrModifyFilterForm" 
                                                                         className={dialogStyle.filterInputBox}
                                                                     >
+                                                                        {
+                                                                            (inputType !== null) &&
+                                                                            (<>
+                                                                                {
+                                                                                    (inputType === "string") &&
+                                                                                    <input
+                                                                                        type="text"
+                                                                                        placeholder="testo da cercare nel titolo..."
+                                                                                        min="3"
+                                                                                        max="100"
+                                                                                        value={filterToHandle[Object.keys(filterToHandle)[0]]}
+                                                                                        onChange=   { 
+                                                                                                        (event) => 
+                                                                                                            updateValue(event.target, Object.keys(filterToHandle)[0]) 
+                                                                                                    }
+                                                                                    />
+                                                                                }
+                                                                                {
+                                                                                    (inputType === "boolean") &&
+                                                                                    <input type="radio" />
+                                                                                }
+                                                                                {
+                                                                                    (inputType === "number") &&
+                                                                                    <select>
 
+                                                                                    </select>
+                                                                                }
+                                                                            </>)
+                                                                        }
                                                                     </form>
                                 }
                             </li>)
@@ -186,13 +231,15 @@ export default function PageCollection()
             // Ci sarà sicuramente almeno uno user (il super admin)
             const allUsers = await getAllUsers();
             users = allUsers.data.users;
+            // Inseriamo nell'array degli users, in prima posizione, uno user con id negativo (-1) e name ("Tutti"), il che implica una NON SELEZIONE
+            users.splice(0,0, { "id" : -1, "name" : "Tutti" });
             console.log("USERS RECUPERATI: ", users);
             if (userIsLogged)
             {
                 const allCategories = await getAllCategories();
                 categories = allCategories.data.categories;
-                // Inseriamo nell'array delle categorie, in prima posizione, una categoria con id negativo (-1) e name ("Nessuna"), quindi, anche questo array non potrà essere vuoto
-                categories.splice(0, 0, { "id" : -1, "name" : "Nessuna" });
+                // Inseriamo nell'array delle categorie, in prima posizione, una categoria con id negativo (-1) e name ("Tutte"), il che implica una NON SELEZIONE
+                categories.splice(0, 0, { "id" : -1, "name" : "Tutte" });
                 console.log("CATEGORIE RECUPERATE: ", categories);
             }
         }
