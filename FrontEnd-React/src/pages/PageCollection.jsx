@@ -38,12 +38,12 @@ function CompFiltersEditing(props)
 
     // Se siamo in fase di aggiunta di un filtro allora, all'avvio del componente, selectedFilter dovrà essere null, in caso contrario sarà definito (0)
     const [selectedFilter, setSelectedFilter] = useState( addFilter ? null : 0 );
-    const [filterToHandle, setFilterToHandle] = useState( addFilter ? null : filtersArray[0] );
+    const [filterToHandle, setFilterToHandle] = useState( addFilter ? null : {...filtersArray[0]} );
     const [inputType, setInputType] = useState( addFilter ? null : getInputType() );
 
     useEffect( () =>
         {
-            if (selectedFilter !== null)
+            if ((selectedFilter !== null) && (addFilter))
             {
                 console.log("Selected Filter ha cambiato stato");
                 const initializedFilter = initializeSelectedFilter();
@@ -56,7 +56,7 @@ function CompFiltersEditing(props)
             if (filterToHandle !== null)
             {
                 const inputTypeToSet = getInputType();
-                console.log("INPUT TYPE: ", inputTypeToSet);
+                // console.log("INPUT TYPE: ", inputTypeToSet);
                 setInputType(inputTypeToSet);
             }
         }, [filterToHandle]);
@@ -106,8 +106,8 @@ function CompFiltersEditing(props)
 
     function getInputType()
     {
-        console.log("INTERO FILTER TO HANDLE: ", filterToHandle);
-        console.log("INTERO ALLOWED FILTERS: ", allowedFilters);
+        // console.log("INTERO FILTER TO HANDLE: ", filterToHandle);
+        // console.log("INTERO ALLOWED FILTERS: ", allowedFilters);
         const filterKey = getKeyFromFilterToHandle();
         const filterFromAllowedArray = allowedFilters.find( filterToCheck => Object.keys(filterToCheck)[0] == filterKey );
         const filterType = Object.values(filterFromAllowedArray)[0];
@@ -135,6 +135,11 @@ function CompFiltersEditing(props)
     function eventSubmit(event)
     {
         event.preventDefault();
+        console.log("************************************************");
+        console.log("******SUBMIT************************");
+        console.log("INPUTTYPE: ", inputType);
+        console.log("CHIAVE: ", getKeyFromFilterToHandle());
+        console.log("VALORE: ", getValueFromFilterToHandle().trim());
         if (inputType == "string")
         {
             if (isValidStringInput())
@@ -331,6 +336,9 @@ export default function PageCollection()
 
     function clickInDialogView(newData, anyError)
     {
+        console.log("DATI RICEVUTI DA SUB COMPONENTE: ",);
+        console.log("NEWDATA: ", newData);
+        console.log("ANYERROR: ", anyError);
         if (anyError.error)
         {
             incomingError();
@@ -352,9 +360,21 @@ export default function PageCollection()
         }
         else
         {
-            // Nel caso in cui ci sia un nuovo filtro (o un filtro modificato) si setta la query string con lo stesso, aggiungendoci, in coda, gli eventuali altri filtri attivi. L'aggiunta dei filtri attivi viene fatta in coda e non in testa poichè nel backend abbiamo l'impostazione "firstIsValid true", grazie alla quale, nel caso di filtro duplicato (se lo abbiamo modificato) passa come valido il primo valore presente nella query string
             if (newData)
-                changeData("filters", `&filter[${Object.keys(newData)[0]}]=${Object.values(newData)[0]}`.concat(setFiltersQuery()));
+            {
+                let validFiltersQuery = setFiltersQuery();
+                console.log("VALID FILTERS QUERY PRE FIXING: ", validFiltersQuery);
+                if (validFiltersQuery !== "")
+                {
+                    const splittedFiltersQuery = validFiltersQuery.split("&").filter( filterQuery => 
+                        (!filterQuery.startsWith(`filter[${Object.keys(newData)[0]}]=`)));
+                    validFiltersQuery = splittedFiltersQuery.join("&");
+                    if (validFiltersQuery !== "")
+                        validFiltersQuery = "&" + validFiltersQuery;
+                }
+                console.log("VALID FILTERS QUERY POST FIXING: ", validFiltersQuery);
+                changeData("filters", `&filter[${Object.keys(newData)[0]}]=${Object.values(newData)[0]}`.concat(validFiltersQuery));
+            }
             setDialogViewOn(false);
             resetOverlay();
         }
@@ -362,6 +382,7 @@ export default function PageCollection()
 
     function addOrModifyFilter(filterToModify = undefined)
     {
+        console.log("DATI PRONTI PER LA MODIFICA: ", filterToModify);
         incomingDialog();
         setDialogViewOn(true);
         // In fase di aggiunta filtro, passare al sotto componente i filtri "allowed" non presenti tra i "valid". In questo contesto "filterToModify" è undefined.
@@ -426,6 +447,7 @@ export default function PageCollection()
             default     :   CP = 1;
         }
         const filtersQuery = (what === "filters") ? how : setFiltersQuery();
+        console.log("FILTERSQUERY IN CHANGE DATA: ", filtersQuery);
         setAnyQuery(`?page=${CP}&itemsxpage=${PPP}${filtersQuery}`);
     }
 
@@ -591,7 +613,13 @@ export default function PageCollection()
                                                                 <div key={`valid-filter-nr-${index}`} className={style.filterView}>
                                                                     <div className={style.filterUpperGroup}>
                                                                         <span className={style.filterKey}>{filterKey}</span>
-                                                                        <button className={`${style.filterBtn} bg-yellow-200 hover:bg-yellow-300`}>
+                                                                        <button 
+                                                                            className={`${style.filterBtn} bg-yellow-200 hover:bg-yellow-300`}
+                                                                            onClick=    { 
+                                                                                            () => 
+                                                                                                addOrModifyFilter({ [filterKey] : collectionData.validFilters[filterKey] }) 
+                                                                                        }
+                                                                        >
                                                                             <i class="fa-solid fa-pencil"></i>
                                                                         </button>
                                                                         <button className={`${style.filterBtn} bg-red-400 hover:bg-red-700`}>
