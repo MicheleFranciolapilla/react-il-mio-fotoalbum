@@ -25,22 +25,26 @@ function filterItalianName(filterEnglishName)
     }
 }
 
-// Nel caso di aggiunta di un nuovo filtro, addFilter sarà true e filtersArrayOrFilterObj sarà un array con uno o più filtri (oggetti)
-// Nel caso di modifica di un filtro già valido, addFilter è false e filtersArrayOrFilterObj è un oggetto con una sola chiave ed è l'oggetto da modificare
+// Nel caso di aggiunta di un nuovo filtro, addFilter sarà true e filtersArray sarà un array con uno o più filtri (oggetti)
+// Nel caso di modifica di un filtro già valido, addFilter è false e filtersArray è un array con all'interno un unico oggetto, quello da modificare
 function CompFiltersEditing(props)
 {
-    const { addFilter, filtersArrayOrFilterObj, onEventClick } = props;
+    const { addFilter, filtersArray, onEventClick } = props;
 
     console.log("VALORE BOOLEANO: ", addFilter);
-    console.log("FILTERS: ", filtersArrayOrFilterObj);
+    console.log("FILTERS: ", filtersArray);
 
-    const [selectedFilter, setSelectedFilter] = useState(null);
-    const [filterToHandle, setFilterToHandle] = useState( addFilter ? null : filtersArrayOrFilterObj );
+    // Se siamo in fase di aggiunta di un filtro allora, all'avvio del componente, selectedFilter dovrà essere null, in caso contrario sarà definito (0)
+    const [selectedFilter, setSelectedFilter] = useState( addFilter ? null : 0 );
+    const [filterToHandle, setFilterToHandle] = useState( addFilter ? null : filtersArray[0] );
 
     useEffect( () =>
         {
-            if (selectedFilter)
-                setFilterToHandle(filtersArrayOrFilterObj[selectedFilter]);
+            if (selectedFilter !== null)
+            {
+                console.log("Selected Filter ha cambiato stato");
+                setFilterToHandle(filtersArray[selectedFilter]);
+            }
         }, [selectedFilter]);
 
     function clickOnFilter(index)
@@ -63,52 +67,53 @@ function CompFiltersEditing(props)
 
     return (
         <div className={dialogStyle.dialogView}>
-            {
-                addFilter &&    <div className={dialogStyle.filterSelectionBox}>
-                                    <h2 className={dialogStyle.selectionBoxTitle}>Selezionare il filtro</h2>
-                                    <ul className={dialogStyle.filtersList}>
-                                        {
-                                            filtersArrayOrFilterObj.map( (filterObj, index) => 
-                                                <li 
-                                                    key={`Filter-Select-${index}`}
-                                                    className={dialogStyle.filterItem}
-                                                >
-                                                    <button 
-                                                        className={`${dialogStyle.filterName} ${setClasses(index)}`}
-                                                        type="button"
-                                                        onClick={ () => clickOnFilter(index) }
-                                                    >
-                                                        { filterItalianName(Object.keys(filterObj)[0]) }
-                                                    </button>
-                                                    {
-                                                        (selectedFilter === index)
-                                                        &&
-                                                        <div className={dialogStyle.filterInputBox}>
-                                                            
-                                                        </div>
-                                                    }
-                                                </li>)
-                                        }
-                                    </ul>
-                                    <div className={dialogStyle.buttonsGroup}>
-                                        <button
-                                            className={dialogStyle.buttonsInGroup}
-                                            type="button"
-                                            onClick={ () => onEventClick(false) }
-                                        >
-                                            Annulla
-                                        </button>
-                                        {
-                                            (selectedFilter !== null) &&    <button 
-                                                                                className={dialogStyle.buttonsInGroup}
-                                                                                type="button"
-                                                                            >
-                                                                                Conferma
-                                                                            </button>
-                                        }
-                                    </div>
-                                </div>
-            }
+            <div className={dialogStyle.filterSelectionBox}>
+                <h2 className={dialogStyle.selectionBoxTitle}>
+                    { addFilter ? "Selezionare il filtro" : "Modifica filtro" }
+                </h2>
+                <ul className={dialogStyle.filtersList}>
+                    {
+                        filtersArray.map( (filterObj, index) => 
+                            <li 
+                                key={`Filter-Select-${index}`}
+                                className={dialogStyle.filterItem}
+                            >
+                                <button 
+                                    className={`${dialogStyle.filterName} ${setClasses(index)}`}
+                                    type="button"
+                                    onClick={ () => clickOnFilter(index) }
+                                >
+                                    { filterItalianName(Object.keys(filterObj)[0]) }
+                                </button>
+                                {
+                                    (selectedFilter === index) &&   <form 
+                                                                        id="addOrModifyFilterForm" 
+                                                                        className={dialogStyle.filterInputBox}
+                                                                    >
+                                                                    </form>
+                                }
+                            </li>)
+                    }
+                </ul>
+                <div className={dialogStyle.buttonsGroup}>
+                    <button
+                        className={dialogStyle.buttonsInGroup}
+                        type="button"
+                        onClick={ () => onEventClick(false) }
+                    >
+                        Annulla
+                    </button>
+                    {
+                        (selectedFilter !== null) &&    <button 
+                                                            className={dialogStyle.buttonsInGroup}
+                                                            type="submit"
+                                                            form="addOrModifyFilterForm"
+                                                        >
+                                                            Conferma
+                                                        </button>
+                    }
+                </div>
+            </div>
         </div>
     )
 }
@@ -209,12 +214,13 @@ export default function PageCollection()
         setDialogViewOn(true);
         // In fase di aggiunta filtro, passare al sotto componente i filtri "allowed" non presenti tra i "valid". In questo contesto "filterToModify" è undefined.
         // In fase di modifica passare direttamente il filtro da modificare, ovvero "filterToModify" che, essendo un filtro valido è sicuramente definito.
+        // Nella fase di modifica, il filtro da modificare lo si passa come elemento unico di un array, in questo modo, nel componente si gestisce sempre un array con uno o più filtri al proprio interno
         if (filterToModify)
             // setViewForFilterEditor(CompFiltersEditing(false, filterToModify));
         setViewForFilterEditor(
             <CompFiltersEditing 
                 addFilter={false} 
-                filtersArrayOrFilterObj={filterToModify} 
+                filtersArray={[filterToModify]} 
                 onEventClick={ (newData) => clickInDialogView(newData) } 
             />);
         else
@@ -229,7 +235,7 @@ export default function PageCollection()
             setViewForFilterEditor(
                 <CompFiltersEditing 
                     addFilter={true} 
-                    filtersArrayOrFilterObj={filtersToSelectFrom} 
+                    filtersArray={filtersToSelectFrom} 
                     onEventClick={ (newData) => clickInDialogView(newData) } 
                 />);
 
