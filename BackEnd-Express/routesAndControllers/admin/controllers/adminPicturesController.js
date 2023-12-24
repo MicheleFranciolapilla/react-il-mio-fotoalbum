@@ -222,7 +222,7 @@ async function update(req, res, next)
 {
     const id = parseInt(req.params.id);
     let { title, description, visible, categories } = req.body;
-    const userId = req.user.id;
+    let userId = req.user.id;
     const role = req.user.role;
     if (!visible)
         visible = "";
@@ -235,7 +235,7 @@ async function update(req, res, next)
                                                 "categories"    :   true 
                                             }
                         };
-    const { file } = req;
+    let { file } = req;
     let image = null;
     let imageMime = null;
     // Prevedere controlli sulla tipologia di file
@@ -245,6 +245,20 @@ async function update(req, res, next)
         image = file.filename;
         imageMime = file.mimetype;
         fileWithExt(file);
+    }
+    // Se il super admin ha tentato di modificare altri campi diversi dalla visibilità li si rende undefined per annullarne la modifica; inoltre, se ha tentato anche di inserire una nuova immagine, per annullarne l'effetto si riporta tutto nelle condizioni di immagine non caricata, cancellandola anche da public
+    if (role === "Super Admin")
+    {
+        title = undefined;
+        description = undefined;
+        categories = undefined;
+        if (file)
+        {
+            file = undefined;
+            deleteFile(image, imageFolderName, splitMime(imageMime)[1]);
+            image = null;
+            imageMime = null;
+        }
     }
     let pictureToUpdate = null;
     try
@@ -269,6 +283,8 @@ async function update(req, res, next)
 
     console.log("SI PROSEGUE, QUINDI LA PICTURE DA MODIFICARE ESISTE");
 
+    // Si riassegna alla variabile userId l'id del suo autore poichè, se ad essere attivo è il super admin significa che la variabile ha l'id del super admin che non è l'autore effettivo e dunque, durante l'update avverrebbe una riassegnazione dell'autore sul super admin stesso, il che non deve accadere.
+    userId = pictureToUpdate.userId;
     let allCategoriesIds = [];
     console.log("CATEGORIES RICEVUTE IN INPUT: ", categories);
     // Se sono state richiesti dei collegamenti con specifiche categorie, da parte del client, si verifica che esse siano effettivamente esistenti, in caso contrario le si rimuove, questo per garantire comunque il salvataggio dei dati senza incorrere in errori.
