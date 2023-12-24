@@ -13,10 +13,22 @@ function boolOf(boolStr)
 // NEL MOMENTO IN CUI SI E' FATTO IN MODO CHE, CORRETTAMENTE, I FILTRI FOSSERO RECUPERATI DALLA QUERY STRING SI E' VERIFICATO CHE, A PARITA' DI FILTRO, IL VALORE DELLO STESSO DIVENTAVA UN ARRAY E DUNQUE SALTAVA TUTTO IL MECCANISMO.
 // AL MOMENTO NON SI MODIFICA LA LOGICA DEL BACKEND MA SI PROVVEDE, LATO FRONTEND A FARE IN MODO CHE LE QUERY STRING NON ABBIANO I FILTRI RIPETUTI
 
-function retrieveValidFilters(filtersFromBody, admin)
+function superAdminArray(filters)
+{
+    const guestArray = filters ? guestFilters : guestQueries;
+    const adminArray = filters ? adminFilters : adminQueries;
+    const guestKeys = guestArray.map( itemObj => Object.keys(itemObj)[0] );
+    let finalArray = guestArray;
+    adminArray.forEach( itemObj => !guestKeys.includes(Object.keys(itemObj)[0]) && finalArray.push(itemObj));
+    return finalArray;
+}
+
+function retrieveValidFilters(filtersFromBody, admin, role = "")
 {
     // OGGETTO IN ENTRATA, ARRAY DI OGGETTI IN USCITA
-    const allowedFilters = admin ? adminFilters : guestFilters;
+    let allowedFilters = admin ? adminFilters : guestFilters;
+    if (admin && role === "Super Admin")
+        allowedFilters = superAdminArray(true);
     const filtersKeys = Object.keys(filtersFromBody).map( bodyKey => bodyKey);
     let finalFilters = [];
     filtersKeys.forEach( bodyKey =>
@@ -56,10 +68,12 @@ function avoidDuplicates(filtersToFix, firstIsValid, stringValueToLowerCase)
     return objToReturn;
 }
 
-function buildWhereQuery(initialWhereQuery, filtersObj, admin)
+function buildWhereQuery(initialWhereQuery, filtersObj, admin, role = "")
 {
     // OGGETTO IN ENTRATA E QUERY OBJECT (WHERE) IN USCITA
-    const queryPattern = admin ? adminQueries : guestQueries;
+    let queryPattern = admin ? adminQueries : guestQueries;
+    if (admin && role === "Super Admin")
+        queryPattern = superAdminArray(false);
     let query = { ...initialWhereQuery["where"] };
     for (key in filtersObj)
     {
@@ -80,4 +94,4 @@ function buildWhereQuery(initialWhereQuery, filtersObj, admin)
     return result;
 }
 
-module.exports = { retrieveValidFilters, avoidDuplicates, buildWhereQuery };
+module.exports = { retrieveValidFilters, avoidDuplicates, buildWhereQuery, superAdminArray };

@@ -3,7 +3,9 @@ const   prisma = new PrismaClient();
 
 const   { splitMime, fileWithExt, deleteFile } = require("../../../utilities/filesUtilities");
 const   { removePassword } = require("../../../utilities/passwords");
-const   { retrieveValidFilters, avoidDuplicates, buildWhereQuery } = require("../../../utilities/filterUtilities/filteringFunctions");
+const   { retrieveValidFilters, avoidDuplicates, buildWhereQuery, superAdminArray } = require("../../../utilities/filterUtilities/filteringFunctions");
+
+const   adminFilters = require("../../../utilities/filterUtilities/allowedFilters/adminFilters.json");
 
 const   ErrorFromDB = require("../../../exceptionsAndMiddlewares/exceptions/ErrorFromDB");
 const   ErrorItemNotFound = require("../../../exceptionsAndMiddlewares/exceptions/ErrorItemNotFound");
@@ -34,15 +36,16 @@ async function index(req, res, next)
 {
     const { filter } = req.query || null;
     const userId = req.user.id;
+    const role = req.user.role;
     console.log(filter);
-    let prismaQuery = { "where" : { "userId" : parseInt(userId) } };
+    let prismaQuery = (role === "Super Admin") ? { "where" : {} } : { "where" : { "userId" : parseInt(userId) } };
     let validFilters = {};
     if (filter)
     {
         console.log("FILTRI ALL'ORIGINE: ", filter);
-        validFilters = avoidDuplicates(retrieveValidFilters(filter, true), true, true);
+        validFilters = avoidDuplicates(retrieveValidFilters(filter, true, role), true, true);
         console.log("FILTRI VALIDI: ", validFilters);
-        prismaQuery = buildWhereQuery(prismaQuery, validFilters, true);
+        prismaQuery = buildWhereQuery(prismaQuery, validFilters, true, role);
         console.log("THE QUERY IS: ",prismaQuery);
     }
     let totalPicturesAvailable = null;
@@ -113,10 +116,9 @@ async function show(req, res, next)
 {
     const id = parseInt(req.params.id);
     const userId = req.user.id;
-    const prismaQuery = {   "where"     :   { 
-                                                "id"            :   id,
-                                                "userId"        :   parseInt(userId)
-                                            },
+    const role = req.user.role;
+    const whereQueryObj = (role === "Super Admin") ? { "id" : id } : { "id" : id, "userId" : parseInt(userId) }
+    const prismaQuery = {   "where"     :   whereQueryObj,
                             "include"   :   {
                                                 "user"          :   true,
                                                 "categories"    :   true
@@ -141,6 +143,7 @@ async function show(req, res, next)
     }
 }
 
+// La distinzione tra admin e super admin non viene fatta in fase di creazione poichè ciascun autore crea a nome proprio
 async function store(req, res, next)
 {
     // Validazioni su tipo ed esistenza dei dati da effettuare
@@ -214,19 +217,19 @@ async function store(req, res, next)
     }
 }
 
+// Per quanto riguarda la modifica della picture, si fa in modo che il super admin possa solo modificarne la visibilità, fermo restando che potrà cancellare l'intero elemento ma non potrà modificare altri campi, dunque, il super admin ..... o cancella l'intero elemento o ne modifica la sola visibilità
 async function update(req, res, next)
 {
     const id = parseInt(req.params.id);
     let { title, description, visible, categories } = req.body;
     const userId = req.user.id;
+    const role = req.user.role;
     if (!visible)
         visible = "";
+    const whereQueryObj = (role === "Super Admin") ? { "id" : id } : { "id" : id, "userId" : parseInt(userId) };
     // Il principio da adottare in questa update è il seguente:
     // si da la possibilità di modificare solo alcuni elementi, lasciando invariata la foto (nel qual caso la si può non ricaricare)
-    let prismaQuery =   {   "where"     :   {   
-                                                "id"            :   id,
-                                                "userId"        :   parseInt(userId) 
-                                            },
+    let prismaQuery =   {   "where"     :   whereQueryObj,
                             "include"   :   {
                                                 "user"          :   true,
                                                 "categories"    :   true 
@@ -324,15 +327,13 @@ async function update(req, res, next)
     res.json({ picture_updated_to : pictureToUpdate });
 }
 
+// Il super admin ha potere di cancellare anche pictures non proprie
 async function destroy(req, res, next)
 {
     const id = parseInt(req.params.id);
     const userId = req.user.id;
-    const prismaQuery = {   "where" :   { 
-                                            "id"        :   id,
-                                            "userId"    :   parseInt(userId)
-                                        } 
-                        };
+    const role = req.user.role;
+    const prismaQuery = (role === "Super Admin") ? { "where" : { "id" : id } } : { "where" : { "id" : id, "userId" : parseInt(userId) } };
     let pictureToDelete = null;
     try
     {
@@ -357,4 +358,11 @@ async function destroy(req, res, next)
     }
 }
 
-module.exports = { index, show, store, update, destroy }
+function getAllowedFilters(req, res)
+{
+    const { role } = req.user;
+    const allowedFilters = (role === "Super Admin") ? superAdminArray(true) : adminFilters;
+    res.json({ allowedFilters });
+}
+
+module.exports = { index, show, store, update, destroy, getAllowedFilters }

@@ -6,6 +6,7 @@ const   imageUploader = multer({ dest : "public/imagesForPictures" }).single("im
 
 const   controllers = require("../controllers/adminPicturesController");
 
+router.get("/allowed_filters", controllers.getAllowedFilters);
 router.get("/", controllers.index);
 router.get("/:id", controllers.show);
 router.post("/", imageUploader, controllers.store);

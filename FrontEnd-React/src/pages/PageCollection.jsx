@@ -135,11 +135,6 @@ function CompFiltersEditing(props)
     function eventSubmit(event)
     {
         event.preventDefault();
-        console.log("************************************************");
-        console.log("******SUBMIT************************");
-        console.log("INPUTTYPE: ", inputType);
-        console.log("CHIAVE: ", getKeyFromFilterToHandle());
-        console.log("VALORE: ", getValueFromFilterToHandle().trim());
         if (inputType == "string")
         {
             if (isValidStringInput())
