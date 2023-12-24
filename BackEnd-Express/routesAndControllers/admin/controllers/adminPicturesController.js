@@ -376,6 +376,7 @@ async function destroy(req, res, next)
 
 function getAllowedFilters(req, res)
 {
+    console.log("FILTRI RICHIESTI IN ADMIN");
     const { role } = req.user;
     const allowedFilters = (role === "Super Admin") ? superAdminArray(true) : adminFilters;
     res.json({ allowedFilters });

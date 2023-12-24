@@ -41,6 +41,13 @@ function CompFiltersEditing(props)
     const [filterToHandle, setFilterToHandle] = useState( addFilter ? null : {...filtersArray[0]} );
     const [inputType, setInputType] = useState( addFilter ? null : getInputType() );
 
+    // useEffect( () =>
+    // {
+    //     setSelectedFilter( addFilter ? null : 0 );
+    //     setFilterToHandle( addFilter ? null : {...filtersArray[0]} );
+    //     setInputType( addFilter ? null : getInputType() );
+    // }, [addFilter, filtersArray]);
+
     useEffect( () =>
         {
             if ((selectedFilter !== null) && (addFilter))
@@ -323,8 +330,10 @@ export default function PageCollection()
     const { userIsLogged } = useContextUserAuthentication();
     const navigate = useNavigate();
 
+    // Ad ogni ricaricamento del componente o ad ogni cambio di utente (userIsLogged) si resetta lo state di "anyQuery" e si esegue makeApiCall(TRUE) di modo da reinizializzare tutti gli elementi (array dei filtri, array degli autori e delle categorie e state di "collectionData")
     useEffect( () =>
         {
+            setAnyQuery(null);
             makeApiCall(true);
         }, [userIsLogged]);
 

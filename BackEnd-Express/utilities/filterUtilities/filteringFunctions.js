@@ -15,10 +15,11 @@ function boolOf(boolStr)
 
 function superAdminArray(filters)
 {
-    const guestArray = filters ? guestFilters : guestQueries;
-    const adminArray = filters ? adminFilters : adminQueries;
+    // Shallow copy necessaria a causa di un bug per cui la chiamata guest/getallowedfilters, pur eseguendo il codice corretto, restituiva come admin/getallowedfilters
+    const guestArray = filters ? [...guestFilters] : [...guestQueries];
+    const adminArray = filters ? [...adminFilters] : [...adminQueries];
     const guestKeys = guestArray.map( itemObj => Object.keys(itemObj)[0] );
-    let finalArray = guestArray;
+    let finalArray = [...guestArray];
     adminArray.forEach( itemObj => !guestKeys.includes(Object.keys(itemObj)[0]) && finalArray.push(itemObj));
     return finalArray;
 }

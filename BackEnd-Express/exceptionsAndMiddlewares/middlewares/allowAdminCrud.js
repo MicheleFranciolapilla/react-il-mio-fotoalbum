@@ -30,7 +30,7 @@ function allowAdminCrud(req, res, next)
         return next( new ErrorInvalidToken("Utente non autorizzato") );
     
     req["user"] = userToAllow;
-    console.log("USER: ", userToAllow);
+    console.log("THE USER: ", userToAllow);
     next();
 } 
 
