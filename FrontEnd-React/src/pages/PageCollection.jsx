@@ -444,7 +444,6 @@ export default function PageCollection()
                     filtersArray={filtersToSelectFrom} 
                     onEventClick={ (newData, anyError) => clickInDialogView(newData, anyError) } 
                 />);
-
         }
     }
 
@@ -502,8 +501,23 @@ export default function PageCollection()
 
     function canAddMoreFilter()
     {
-        // Ricordarsi di controllare perchè il click su (tutti) non produce azione
-        // if (allowedFilters !== Object.keys(collectionData.validFilters))
+        if  (((collectionData.validFilters === "none") && (allowedFilters.length !== 0)) 
+            ||
+            (Object.keys(collectionData.validFilters).length) < allowedFilters.length)
+            return true;
+        else
+            return false;
+    }
+
+    function deleteFilter(filterKey)
+    {
+        let validFiltersQuery = setFiltersQuery();
+        const splittedFiltersQuery = validFiltersQuery.split("&").filter( filterQuery => 
+            (!filterQuery.startsWith(`filter[${filterKey}]=`)));
+        validFiltersQuery = splittedFiltersQuery.join("&");
+        if (validFiltersQuery !== "")
+            validFiltersQuery = "&" + validFiltersQuery;
+        changeData("filters", validFiltersQuery);
     }
 
     return (
@@ -677,7 +691,10 @@ export default function PageCollection()
                                                                         >
                                                                             <i class="fa-solid fa-pencil"></i>
                                                                         </button>
-                                                                        <button className={`${style.filterBtn} bg-red-400 hover:bg-red-700`}>
+                                                                        <button 
+                                                                            className={`${style.filterBtn} bg-red-400 hover:bg-red-700`}
+                                                                            onClick={ () => deleteFilter(filterKey) }
+                                                                        >
                                                                             <i class="fa-solid fa-trash-can"></i>
                                                                         </button>
                                                                     </div>
@@ -690,8 +707,8 @@ export default function PageCollection()
                                             }
                                         </div>
                                         <button 
-                                            // disabled={}
-                                            className={style.addFilterBtn} 
+                                            disabled={!canAddMoreFilter()}
+                                            className={`${style.addFilterBtn} ${!canAddMoreFilter() && style.addFilterBtnDisabled}`} 
                                             type="button" 
                                             onClick={ () => addOrModifyFilter() }
                                         >

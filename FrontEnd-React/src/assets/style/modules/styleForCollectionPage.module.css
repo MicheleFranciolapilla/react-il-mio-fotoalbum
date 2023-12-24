@@ -57,3 +57,8 @@
 {
     @apply p-1 border-2 border-black hover:border-blue-400 text-black hover:text-blue-400 bg-stone-400 hover:bg-white text-base rounded-md;
 }
+
+.addFilterBtnDisabled
+{
+    @apply border-black/20 hover:border-black/20 text-black/20 hover:text-black/20 bg-stone-400/20 hover:bg-stone-400/20;
+}
