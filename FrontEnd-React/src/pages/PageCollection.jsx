@@ -167,76 +167,115 @@ function CompFiltersEditing(props)
                                     { filterItalianName(Object.keys(filterObj)[0]) }
                                 </button>
                                 {
-                                    (selectedFilter === index) &&   <form 
-                                                                        id="addOrModifyFilterForm" 
-                                                                        className={dialogStyle.filterInputBox}
-                                                                        onSubmit={ (event) => eventSubmit(event) }
-                                                                    >
-                                                                        {
-                                                                            (inputType !== null) &&
-                                                                            (<>
-                                                                                {
-                                                                                    (inputType === "string") &&
-                                                                                    <input
-                                                                                        type="text"
-                                                                                        placeholder="testo da cercare nel titolo..."
-                                                                                        min="3"
-                                                                                        max="100"
-                                                                                        value={getValueFromFilterToHandle()}
-                                                                                        onChange=   { 
-                                                                                                        (event) => 
-                                                                                                            updateValue(
-                                                                                                                event.target.value, 
-                                                                                                                getKeyFromFilterToHandle(),
-                                                                                                                "string") 
-                                                                                                    }
-                                                                                    />
-                                                                                }
-                                                                                {
-                                                                                    (inputType === "boolean") &&
-                                                                                    <input type="radio" />
-                                                                                }
-                                                                                {
-                                                                                    (inputType === "number") &&
-                                                                                    <select 
-                                                                                        className={dialogStyle.selectBox}
-                                                                                        name={getKeyFromFilterToHandle()}
-                                                                                        value={getValueFromFilterToHandle()}
-                                                                                        onChange=   {
-                                                                                                        (event) =>
-                                                                                                            updateValue(
-                                                                                                                event.target.value,
-                                                                                                                getKeyFromFilterToHandle(),
-                                                                                                                "select")
-                                                                                                    }
-                                                                                    >
-                                                                                        {
-                                                                                            (getKeyFromFilterToHandle() == "author_id")
-                                                                                            &&
-                                                                                            authors.map( author => 
-                                                                                                <option
-                                                                                                    key={`author-${author.id}`}
-                                                                                                    value={author.id}
-                                                                                                >
-                                                                                                    { author.name }
-                                                                                                </option>)
-                                                                                        }
-                                                                                        {
-                                                                                            (getKeyFromFilterToHandle() == "category_id")
-                                                                                            &&
-                                                                                            categories.map( category => 
-                                                                                                <option
-                                                                                                    key={`category-${category.id}`}
-                                                                                                    value={category.id}
-                                                                                                >
-                                                                                                    { category.name }
-                                                                                                </option>)
-                                                                                        }
-                                                                                    </select>
-                                                                                }
-                                                                            </>)
-                                                                        }
-                                                                    </form>
+                                    (selectedFilter === index) 
+                                    &&   
+                                    <form 
+                                        id="addOrModifyFilterForm" 
+                                        className={dialogStyle.filterInputBox}
+                                        onSubmit={ (event) => eventSubmit(event) }
+                                    >
+                                        {
+                                            (inputType !== null) 
+                                            &&
+                                            (<>
+                                                {
+                                                    (inputType === "string") 
+                                                    &&
+                                                    <input
+                                                        type="text"
+                                                        placeholder="testo da cercare nel titolo..."
+                                                        min="3"
+                                                        max="100"
+                                                        value={getValueFromFilterToHandle()}
+                                                        onChange=   { 
+                                                                        (event) => 
+                                                                            updateValue(
+                                                                                event.target.value, 
+                                                                                getKeyFromFilterToHandle(),
+                                                                                "string") 
+                                                                    }
+                                                    />
+                                                }
+                                                {
+                                                    (inputType === "boolean") 
+                                                    &&
+                                                    <div className={dialogStyle.radioBox}>
+                                                        <div className={dialogStyle.radioOption}>
+                                                            <label htmlFor="publicPicture">Pubblica</label>
+                                                            <input 
+                                                                id="publicPicture"
+                                                                type="radio"
+                                                                name="public-picture"
+                                                                value="isPublic"
+                                                                onChange=   {
+                                                                                (event) =>
+                                                                                    updateValue(
+                                                                                        event.target.value,
+                                                                                        getKeyFromFilterToHandle(),
+                                                                                        "radio")
+                                                                            }
+                                                            />
+                                                        </div>
+                                                        <div className={dialogStyle.radioOption}>
+                                                            <label htmlFor="privatePicture">Privata</label>
+                                                            <input 
+                                                                id="privatePicture"
+                                                                type="radio"
+                                                                name="public-picture"
+                                                                value="isPrivate"
+                                                                onChange=   {
+                                                                                (event) =>
+                                                                                    updateValue(
+                                                                                        event.target.value,
+                                                                                        getKeyFromFilterToHandle(),
+                                                                                        "radio")
+                                                                            }
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                }
+                                                {
+                                                    (inputType === "number") 
+                                                    &&
+                                                    <select 
+                                                        className={dialogStyle.selectBox}
+                                                        name={getKeyFromFilterToHandle()}
+                                                        value={getValueFromFilterToHandle()}
+                                                        onChange=   {
+                                                                        (event) =>
+                                                                            updateValue(
+                                                                                event.target.value,
+                                                                                getKeyFromFilterToHandle(),
+                                                                                "select")
+                                                                    }
+                                                    >
+                                                        {
+                                                            (getKeyFromFilterToHandle() == "author_id")
+                                                            &&
+                                                            authors.map( author => 
+                                                                <option
+                                                                    key={`author-${author.id}`}
+                                                                    value={author.id}
+                                                                >
+                                                                    { author.name }
+                                                                </option>)
+                                                        }
+                                                        {
+                                                            (getKeyFromFilterToHandle() == "category_id")
+                                                            &&
+                                                            categories.map( category => 
+                                                                <option
+                                                                    key={`category-${category.id}`}
+                                                                    value={category.id}
+                                                                >
+                                                                    { category.name }
+                                                                </option>)
+                                                        }
+                                                    </select>
+                                                }
+                                            </>)
+                                        }
+                                    </form>
                                 }
                             </li>)
                     }
@@ -287,7 +326,7 @@ export default function PageCollection()
     useEffect( () =>
         {
             makeApiCall(true);
-        }, []);
+        }, [userIsLogged]);
 
     useEffect( () =>
         {
@@ -300,8 +339,6 @@ export default function PageCollection()
 
     async function makeApiCall(firstCall)
     {
-        // EFFETTUARE CONTROLLI SULLA PERSISTENZA DEGLI STATES AL CAMBIO DEL VALORE DI USERISLOGGED
-
         if (firstCall)
         {
             // Prevedere il caso in cui outcome sia false (per ogni chiamata) e lanciare opportuno messaggio di errore

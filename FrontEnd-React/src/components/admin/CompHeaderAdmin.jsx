@@ -20,6 +20,7 @@ export default function CompHeaderAdmin()
                 <button className={style.menuItem} type="button" onClick={ manageUserLogOut } >
                     Log Out
                 </button>
+                <NavLink to={"/admin/collection"}> collezione </NavLink>
             </div>
         </header>
     )
