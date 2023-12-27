@@ -62,11 +62,27 @@ function CompFiltersEditing(props)
         {
             if (filterToHandle !== null)
             {
-                const inputTypeToSet = getInputType();
-                // console.log("INPUT TYPE: ", inputTypeToSet);
-                setInputType(inputTypeToSet);
+                if (inputType === null)
+                {
+                    const inputTypeToSet = getInputType();
+                    console.log("INPUT TYPE: ", inputTypeToSet);
+                    setInputType(inputTypeToSet);
+                }
             }
         }, [filterToHandle]);
+
+    useEffect( () =>
+        {
+            if (inputType === "boolean")
+                setRadioChecked();
+        }, [inputType]);
+
+    function setRadioChecked()
+    {
+        const boolRadioValue = getValueFromFilterToHandle();
+        document.getElementById("publicPicture").checked = boolRadioValue;
+        document.getElementById("privatePicture").checked = !boolRadioValue;
+    }
 
     function getKeyFromFilterToHandle()
     {
@@ -86,7 +102,8 @@ function CompFiltersEditing(props)
         let initializedFilterValue = "";
         switch (filtersArray[selectedFilter][initializedFilterKey])
         {
-            case "boolean"  :   break;
+            case "boolean"  :   initializedFilterValue = true;
+                                break;
             case "number"   :   initializedFilterValue = 0;
                                 break;
         }
@@ -126,6 +143,8 @@ function CompFiltersEditing(props)
         let filterValue = newValue;
         if (inputIdentifier === "string")
             filterValue = filterValue.toLowerCase();
+        else if (inputIdentifier === "radio")
+            filterValue = (newValue === "isPublic");
         const newFilterObj = { [filterName] : filterValue }
         setFilterToHandle(newFilterObj);
     }
@@ -142,14 +161,16 @@ function CompFiltersEditing(props)
     function eventSubmit(event)
     {
         event.preventDefault();
-        if (inputType == "string")
+        if (inputType === "string")
         {
             if (isValidStringInput())
                 onEventClick({ [getKeyFromFilterToHandle()] : getValueFromFilterToHandle().trim() }, { "error" : false });
             else
                 onEventClick(null, { "error" : true, "msg" : "Filtro non valido!" });
         }
-        else if (inputType == "number")
+        else if (inputType === "number")
+            onEventClick({ [getKeyFromFilterToHandle()] : getValueFromFilterToHandle() }, { "error" : false });
+        else if (inputType === "boolean")
             onEventClick({ [getKeyFromFilterToHandle()] : getValueFromFilterToHandle() }, { "error" : false });
     }
 
@@ -358,15 +379,15 @@ export default function PageCollection()
             const allAuthors = await getAllUsers();
             authors = allAuthors.data.users;
             authors.forEach( author => author.name += " ".concat(author.surname));
-            // Inseriamo nell'array degli authors, in prima posizione, uno user con id negativo (-1) e name ("Tutti - Nessun filtro"), il che implica una NON SELEZIONE
-            authors.splice(0,0, { "id" : -1, "name" : "Tutti (Nessun filtro)" });
+            // Inseriamo nell'array degli authors, in prima posizione, uno user con id nullo (0) e name ("Tutti - Nessun filtro"), il che implica una NON SELEZIONE
+            authors.splice(0,0, { "id" : 0, "name" : "Tutti (Nessun filtro)" });
             console.log("AUTORI RECUPERATI: ", authors);
             if (userIsLogged)
             {
                 const allCategories = await getAllCategories();
                 categories = allCategories.data.categories;
-                // Inseriamo nell'array delle categorie, in prima posizione, una categoria con id negativo (-1) e name ("Tutte - Nessun filtro"), il che implica una NON SELEZIONE
-                categories.splice(0, 0, { "id" : -1, "name" : "Tutte (Nessun filtro)" });
+                // Inseriamo nell'array delle categorie, in prima posizione, una categoria con id nullo (0) e name ("Tutte - Nessun filtro"), il che implica una NON SELEZIONE
+                categories.splice(0, 0, { "id" : 0, "name" : "Tutte (Nessun filtro)" });
                 console.log("CATEGORIE RECUPERATE: ", categories);
             }
         }
@@ -541,6 +562,10 @@ export default function PageCollection()
         {
             const itemById = valuesArray.find( item => item.id == valueToShow );
             valueToShow = itemById.name;
+        }
+        else if (filterKey == "visible")
+        {
+            valueToShow = collectionData.validFilters[filterKey] ? "foto pubblica" : "foto privata";
         }
         return valueToShow;
     }
